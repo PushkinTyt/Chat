@@ -15,7 +15,7 @@ namespace CommunicationTools
 {
     public class TCPClient
     {
-        TcpClient client;
+        Socket client;
         bool shouldWork = true;
 
         Thread messageHandler;
@@ -29,7 +29,7 @@ namespace CommunicationTools
         {
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
 
-            client = new TcpClient();
+            client = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
             try
             {
@@ -54,43 +54,103 @@ namespace CommunicationTools
         /// Отправляет сообщение сокету-серверу
         /// </summary>
         /// <param name="msg"></param>
-        public void Send(string msg)
+        public bool Send(string msg)
         {
-            if (client.Connected)
+            byte[] buffer;
+
+            MetaData md = new MetaData(MetaData.Roles.Client, MetaData.Actions.none);
+            //md.Encoding = Encoding.Unicode;
+            md.CalcMsgData(msg);
+
+            //Сериализуем и шлем пакет метаданных
+            MemoryStream ms = new MemoryStream();
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(ms, md);
+            ms.Position = 0;
+            buffer = new byte[ms.Length];
+            ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
+            try
             {
-                byte[] buffer;
+                client.Send(buffer);
+            }
+            catch(Exception ex)
+            {
+                Debug.Print(ex.Message);
+                return false;
+            }
+                
 
-                MetaData md = new MetaData(MetaData.Roles.Client, MetaData.Actions.none);
-                //md.Encoding = Encoding.Unicode;
-                md.CalcMsgData(msg);
+            MemoryStream msgStream = new MemoryStream();
+            byte[] bytes = md.Encoding.GetBytes(msg);
+            msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
 
-                //Сериализуем и шлем пакет метаданных
-                MemoryStream ms = new MemoryStream();
-                BinaryFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(ms, md);
-                ms.Position = 0;
-                buffer = new byte[ms.Length];
-                ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
-                client.Client.Send(buffer);
-
-                MemoryStream msgStream = new MemoryStream();
-                byte[] bytes = md.Encoding.GetBytes(msg);
-                msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
-
-                //Шлем само сообщение
-                buffer = new byte[md.BufferSize];
-                msgStream.Position = 0;
-                int readCount = 0;
-                while(readCount < msgStream.Length)
+            //Шлем само сообщение
+            buffer = new byte[md.BufferSize];
+            msgStream.Position = 0;
+            int readCount = 0;
+            while(readCount < msgStream.Length)
+            {
+                readCount += msgStream.Read(buffer, 0, md.BufferSize);
+                try
                 {
-                    readCount += msgStream.Read(buffer, 0, md.BufferSize);
-                    client.Client.Send(buffer);
+                    client.Send(buffer);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Print(ex.Message);
+                    return false;
                 }
             }
-            else
+            return true;
+        }
+
+        public bool Send(string msg, MetaData md)
+        {
+            byte[] buffer;
+
+            //md.Encoding = Encoding.Unicode;
+            md.CalcMsgData(msg);
+
+            //Сериализуем и шлем пакет метаданных
+            MemoryStream ms = new MemoryStream();
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(ms, md);
+            ms.Position = 0;
+            buffer = new byte[ms.Length];
+            ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
+            try
             {
-                throw new Exception("Подключение не удалось");
+                client.Send(buffer);
             }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+                return false;
+            }
+
+
+            MemoryStream msgStream = new MemoryStream();
+            byte[] bytes = md.Encoding.GetBytes(msg);
+            msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
+
+            //Шлем само сообщение
+            buffer = new byte[md.BufferSize];
+            msgStream.Position = 0;
+            int readCount = 0;
+            while (readCount < msgStream.Length)
+            {
+                readCount += msgStream.Read(buffer, 0, md.BufferSize);
+                try
+                {
+                    client.Send(buffer);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Print(ex.Message);
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -107,7 +167,7 @@ namespace CommunicationTools
 
                 try
                 {
-                    client.Client.Receive(buffer);
+                    client.Receive(buffer);
                 }
                 catch (SocketException ex)
                 {
@@ -126,7 +186,7 @@ namespace CommunicationTools
                 {
                     try
                     {
-                        client.Client.Receive(buffer);
+                        client.Receive(buffer);
                     }
                     catch (SocketException ex)
                     {

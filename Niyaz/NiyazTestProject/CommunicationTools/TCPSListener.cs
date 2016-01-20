@@ -23,7 +23,7 @@ namespace CommunicationTools
         Thread acceptThread;
         List<Thread> threads = new List<Thread>();
 
-        Dictionary<EndPoint, TcpClient> clients = new Dictionary<EndPoint, TcpClient>();
+        Dictionary<EndPoint, Socket> clients = new Dictionary<EndPoint, Socket>();
 
         /// <summary>
         /// IP-адрес машины, на которой работает этот сокет
@@ -81,12 +81,20 @@ namespace CommunicationTools
             {
                 if(listener.Pending())
                 {
-                    TcpClient client = listener.AcceptTcpClient();
-                    clients.Add(client.Client.RemoteEndPoint, client);
-                    Thread clientHandler = new Thread(() => listen(client));
-                    clientHandler.Start();
+                    try
+                    {
+                        Socket client = listener.AcceptSocket();
+                        clients.Add(client.RemoteEndPoint, client);
+                        Thread clientHandler = new Thread(() => listenClient(client));
+                        clientHandler.Start();
 
-                    threads.Add(clientHandler);
+                        threads.Add(clientHandler);
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                    }
+
                 }
             }
         }
@@ -95,7 +103,7 @@ namespace CommunicationTools
         /// Принимает сообщение от клиентов. При получении сообщения генерируется событие onMessage
         /// </summary>
         /// <param name="client">Обрабатываемый клиент</param>
-        void listen(TcpClient client)
+        private void listenClient(Socket client)
         {
             int bufferSize = MetaData.defaultPacketSize;
 
@@ -107,7 +115,7 @@ namespace CommunicationTools
 
                 try
                 {
-                    client.Client.Receive(buffer);
+                    client.Receive(buffer);
                 }
                 catch(SocketException ex)
                 {
@@ -127,7 +135,7 @@ namespace CommunicationTools
                 {
                     try
                     {
-                        client.Client.Receive(buffer);
+                        client.Receive(buffer);
                     }
                     catch (SocketException ex)
                     {
@@ -137,9 +145,8 @@ namespace CommunicationTools
                     msg += md.Encoding.GetString(buffer);
                 }
 
-                
                 msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
-                onMessage((IPEndPoint)client.Client.RemoteEndPoint, msg);
+                onMessage((IPEndPoint)client.RemoteEndPoint, msg);
 
             }
         }
@@ -150,10 +157,10 @@ namespace CommunicationTools
         /// <param name="IP">IP-адрес клиента</param>
         /// <param name="port">Порт клиента</param>
         /// <param name="msg">Пересылаемое сообщение</param>
-        public void SendToClient(string IP, int port, string msg)
+        public void Send(string IP, int port, string msg)
         {
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(IP), port);
-            this.SendToClient(endpoint, msg);
+            this.Send(endpoint, msg);
         }
 
         /// <summary>
@@ -161,9 +168,9 @@ namespace CommunicationTools
         /// </summary>
         /// <param name="endpoint"></param>
         /// <param name="msg">Пересылаемое сообщение</param>
-        public void SendToClient(IPEndPoint endpoint, string msg)
+        public bool Send(IPEndPoint endpoint, string msg)
         {
-            TcpClient client = clients[endpoint];
+            Socket client = clients[endpoint];
 
             if (client != null)
             {
@@ -187,7 +194,15 @@ namespace CommunicationTools
                     ms.Position = 0;
                     buffer = new byte[ms.Length];
                     ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
-                    client.Client.Send(buffer);
+                    try
+                    {
+                        client.Send(buffer);
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                        return false;
+                    }
 
                     //Шлем сообщение
                     buffer = new byte[md.BufferSize];
@@ -196,18 +211,99 @@ namespace CommunicationTools
                     while (readCount < msgStream.Length)
                     {
                         readCount += msgStream.Read(buffer, 0, md.BufferSize);
-                        client.Client.Send(buffer);
+                        try
+                        {
+                            client.Send(buffer);
+                        }
+                        catch(Exception ex)
+                        {
+                            Debug.Print(ex.Message);
+                            return false;
+                        }
                     }
                 }
                 else
                 {
-                    throw new Exception("Подключение не удалось");
+                    Debug.Print("Client is not connected");
+                    return false;
                 }
             }
             else
             {
                 throw new Exception("Нет такого клиента, смотри, что пихаешь, остолоп!");
             }
+            return true;
+        }
+
+        /// <summary>
+        /// Отправка сообщения клиенту
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="msg">Пересылаемое сообщение</param>
+        public bool Send(IPEndPoint endpoint, string msg, MetaData md)
+        {
+            Socket client = clients[endpoint];
+
+            if (client != null)
+            {
+                if (client.Connected)
+                {
+                    byte[] buffer;
+
+                    md.CalcMsgData(msg);
+                    //md.Encoding = Encoding.Unicode;
+
+                    MemoryStream msgStream = new MemoryStream();
+                    byte[] bytes = md.Encoding.GetBytes(msg);
+                    msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
+
+                    MemoryStream ms = new MemoryStream();
+                    BinaryFormatter formatter = new BinaryFormatter();
+
+                    //Шлем административный пакет
+                    formatter.Serialize(ms, md);
+                    ms.Position = 0;
+                    buffer = new byte[ms.Length];
+                    ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
+                    try
+                    {
+                        client.Send(buffer);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                        return false;
+                    }
+
+                    //Шлем сообщение
+                    buffer = new byte[md.BufferSize];
+                    msgStream.Position = 0;
+                    int readCount = 0;
+                    while (readCount < msgStream.Length)
+                    {
+                        readCount += msgStream.Read(buffer, 0, md.BufferSize);
+                        try
+                        {
+                            client.Send(buffer);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.Print(ex.Message);
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Print("Client is not connected");
+                    return false;
+                }
+            }
+            else
+            {
+                throw new Exception("Нет такого клиента, смотри, что пихаешь, остолоп!");
+            }
+            return true;
         }
 
         /// <summary>

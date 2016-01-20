@@ -16,9 +16,9 @@ namespace CommunicationTools
         static public int defaultPacketSize = 2048;
 
         public enum Roles { Dispatcher, Server, Cache, Client };
-        public enum Actions { none };
+        public enum Actions { none, refText, refNews };
 
-        uint packageNum;
+        uint packageCount;
         int bufferSize = 1024;
         Roles role;
         Actions action;
@@ -59,7 +59,7 @@ namespace CommunicationTools
         {
             get
             {
-                return packageNum;
+                return packageCount;
             }
         }
 
@@ -135,7 +135,7 @@ namespace CommunicationTools
         {
             //деление с округлением в большую сторону
             double fPackageNum = Math.Ceiling((double)Encoding.GetByteCount(msg) / bufferSize);
-            packageNum = Convert.ToUInt32(fPackageNum);
+            packageCount = Convert.ToUInt32(fPackageNum);
         }
     }
 }

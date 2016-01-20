@@ -34,18 +34,32 @@ namespace NiyazTestProject
             client1.onMessage += ReceiveMessage;
             client1.StartListen();
 
+            Random rnd = new Random();
+
             while (true)
             {
                 Console.ReadKey();
-                client.Send("13456");
+                client.Send("Первый клиент");
                 client1.Send("Второй клиент");
+                if(rnd.Next(0, 100) == 35)
+                {
+                    client.Close();
+                }
+                if (rnd.Next(0, 100) == 13)
+                {
+                    client1.Close();
+                }
+                if (rnd.Next(0, 100) == 13)
+                {
+                    listener.Close();
+                }
             }
         }
 
         static void ReceiveMessage(IPEndPoint endpoint, string msg)
         {
             Console.WriteLine(String.Format("{0}: {1}", endpoint.Address, msg));
-            listener.SendToClient(endpoint, "Hello!");
+            listener.Send(endpoint, "Hello!");
         }
 
         static void ReceiveMessage(string msg)

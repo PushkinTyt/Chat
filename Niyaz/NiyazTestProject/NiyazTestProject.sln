@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NiyazTestProject", "NiyazTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationTools", "CommunicationTools\CommunicationTools.csproj", "{38EEB1D7-EF98-440E-B782-7DF1F12510CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{9E952AC8-3101-46D8-B784-AEB4D1531E0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{38EEB1D7-EF98-440E-B782-7DF1F12510CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38EEB1D7-EF98-440E-B782-7DF1F12510CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38EEB1D7-EF98-440E-B782-7DF1F12510CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E952AC8-3101-46D8-B784-AEB4D1531E0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E952AC8-3101-46D8-B784-AEB4D1531E0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E952AC8-3101-46D8-B784-AEB4D1531E0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E952AC8-3101-46D8-B784-AEB4D1531E0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
