@@ -15,68 +15,45 @@ namespace CommunicationTools
         [NonSerialized]
         static public int defaultPacketSize = 2048;
 
-        public enum Roles { Dispatcher, Server, Cache, Client };
-        public enum Actions { none, refText, refNews };
+        public enum Roles { none, dispatcher, server, cache, client };
+        public enum Actions { none, refText, refNews, register };
+        public enum ContentTypes { link, plainText, xml, binary, none };
 
-        uint packageCount;
-        int bufferSize = 1024;
+        int messageSize = 0;
         Roles role;
         Actions action;
-        string body;
+        ContentTypes contentType = ContentTypes.none;
 
         Encoding encoding = Encoding.Default;
 
-        public MetaData(int bufferSize, Roles role, Actions action)
+        public MetaData(Roles role, Actions action, ContentTypes contentType)
         {
-            this.bufferSize = bufferSize;
             this.role = role;
             this.action = action;
+            this.contentType = contentType;
+        }
+
+        public MetaData(Roles role, Actions action, ContentTypes contentType, string message)
+        {
+            this.role = role;
+            this.action = action;
+            this.contentType = contentType;
+            messageSize = encoding.GetByteCount(message);
+        }
+
+        public MetaData(Roles role, Actions action, ContentTypes contentType, Encoding encoding, string message)
+        {
+            this.role = role;
+            this.action = action;
+            this.contentType = contentType;
+            this.encoding = encoding;
+            messageSize = encoding.GetByteCount(message);
         }
 
         public MetaData(Roles role, Actions action)
         {
             this.role = role;
             this.action = action;
-        }
-
-        /// <summary>
-        /// Размер пакета
-        /// </summary>
-        public int BufferSize
-        {
-            get
-            {
-                return bufferSize;
-            }
-
-            set
-            {
-                bufferSize = value;
-            }
-        }
-
-        public uint PackageNum
-        {
-            get
-            {
-                return packageCount;
-            }
-        }
-
-        /// <summary>
-        /// Дополнительная служебная информация
-        /// </summary>
-        public string Body
-        {
-            get
-            {
-                return body;
-            }
-
-            set
-            {
-                body = value;
-            }
         }
 
         /// <summary>
@@ -120,22 +97,14 @@ namespace CommunicationTools
             {
                 return encoding;
             }
-
-            set
-            {
-                encoding = value;
-            }
         }
 
-        /// <summary>
-        /// Подсчет количества необходимых пакетов для пересылки сообщения
-        /// </summary>
-        /// <param name="msg"></param>
-        public void CalcMsgData(string msg)
+        public int MessageSize
         {
-            //деление с округлением в большую сторону
-            double fPackageNum = Math.Ceiling((double)Encoding.GetByteCount(msg) / bufferSize);
-            packageCount = Convert.ToUInt32(fPackageNum);
+            get
+            {
+                return messageSize;
+            }
         }
     }
 }

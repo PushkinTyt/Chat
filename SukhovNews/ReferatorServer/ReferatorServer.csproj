@@ -4,16 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{38EEB1D7-EF98-440E-B782-7DF1F12510CB}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{194C7725-41BF-4C52-A6D9-252C4ADD9695}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CommunicationTools</RootNamespace>
-    <AssemblyName>CommunicationTools</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>ReferatorServer</RootNamespace>
+    <AssemblyName>ReferatorServer</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -32,9 +34,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Messaging" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,18 +44,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComComponent\DispatcherClient.cs" />
-    <Compile Include="MSMQClient.cs" />
-    <Compile Include="MSMQListener.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TCPSockets\TCPClient.cs" />
-    <Compile Include="MetaData.cs" />
-    <Compile Include="TCPSockets\TCPSListener.cs" />
-    <Compile Include="UDPBroadcaster.cs" />
-    <Compile Include="UDPClient.cs" />
+    <Compile Include="RefServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\SukhovNews\App.config">
+    <ProjectReference Include="..\..\Niyaz\NiyazTestProject\CommunicationTools\CommunicationTools.csproj">
+      <Project>{38eeb1d7-ef98-440e-b782-7df1f12510cb}</Project>
+      <Name>CommunicationTools</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\App.config">
       <Link>App.config</Link>
     </None>
   </ItemGroup>

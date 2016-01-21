@@ -36,10 +36,16 @@ namespace CommunicationTools
             }
         }
 
+        //Обработка сообщений
         //Описываем сигнатуру метода-обработчика 
-        public delegate void ReceiveMethod(IPEndPoint endpoint, string msg);
+        public delegate void ReceiveMethod(IPEndPoint endpoint, MetaData md, string msg);
         //Событие, на которое будут подписываться
         public event ReceiveMethod onMessage;
+
+
+        //Обработка ошибок
+        public delegate void ErrorHandler(SocketException ex, Socket socket);
+        public event ErrorHandler onError;
 
         public TCPSListener(int port)
         {
@@ -130,9 +136,9 @@ namespace CommunicationTools
 
                 MetaData md = (MetaData) formatter.Deserialize(ms);
 
-                buffer = new byte[md.BufferSize];
-                for (int i=0; i<md.PackageNum; i++)
+                if(md.MessageSize > 0)
                 {
+                    buffer = new byte[md.MessageSize];
                     try
                     {
                         client.Receive(buffer);
@@ -143,96 +149,12 @@ namespace CommunicationTools
                         break;
                     }
                     msg += md.Encoding.GetString(buffer);
+
+                    msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
                 }
 
-                msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
-                onMessage((IPEndPoint)client.RemoteEndPoint, msg);
-
+                onMessage((IPEndPoint)client.RemoteEndPoint, md, msg);
             }
-        }
-
-        /// <summary>
-        /// Отправка сообщения клиенту
-        /// </summary>
-        /// <param name="IP">IP-адрес клиента</param>
-        /// <param name="port">Порт клиента</param>
-        /// <param name="msg">Пересылаемое сообщение</param>
-        public void Send(string IP, int port, string msg)
-        {
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(IP), port);
-            this.Send(endpoint, msg);
-        }
-
-        /// <summary>
-        /// Отправка сообщения клиенту
-        /// </summary>
-        /// <param name="endpoint"></param>
-        /// <param name="msg">Пересылаемое сообщение</param>
-        public bool Send(IPEndPoint endpoint, string msg)
-        {
-            Socket client = clients[endpoint];
-
-            if (client != null)
-            {
-                if (client.Connected)
-                {
-                    byte[] buffer;
-
-                    MetaData md = new MetaData(1, MetaData.Roles.Client, MetaData.Actions.none);
-                    md.CalcMsgData(msg);
-                    //md.Encoding = Encoding.Unicode;
-
-                    MemoryStream msgStream = new MemoryStream();
-                    byte[] bytes = md.Encoding.GetBytes(msg);
-                    msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
-
-                    MemoryStream ms = new MemoryStream();
-                    BinaryFormatter formatter = new BinaryFormatter();
-
-                    //Шлем административный пакет
-                    formatter.Serialize(ms, md);
-                    ms.Position = 0;
-                    buffer = new byte[ms.Length];
-                    ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
-                    try
-                    {
-                        client.Send(buffer);
-                    }
-                    catch(Exception ex)
-                    {
-                        Debug.Print(ex.Message);
-                        return false;
-                    }
-
-                    //Шлем сообщение
-                    buffer = new byte[md.BufferSize];
-                    msgStream.Position = 0;
-                    int readCount = 0;
-                    while (readCount < msgStream.Length)
-                    {
-                        readCount += msgStream.Read(buffer, 0, md.BufferSize);
-                        try
-                        {
-                            client.Send(buffer);
-                        }
-                        catch(Exception ex)
-                        {
-                            Debug.Print(ex.Message);
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Print("Client is not connected");
-                    return false;
-                }
-            }
-            else
-            {
-                throw new Exception("Нет такого клиента, смотри, что пихаешь, остолоп!");
-            }
-            return true;
         }
 
         /// <summary>
@@ -249,9 +171,6 @@ namespace CommunicationTools
                 if (client.Connected)
                 {
                     byte[] buffer;
-
-                    md.CalcMsgData(msg);
-                    //md.Encoding = Encoding.Unicode;
 
                     MemoryStream msgStream = new MemoryStream();
                     byte[] bytes = md.Encoding.GetBytes(msg);
@@ -276,21 +195,17 @@ namespace CommunicationTools
                     }
 
                     //Шлем сообщение
-                    buffer = new byte[md.BufferSize];
+                    buffer = new byte[md.MessageSize];
                     msgStream.Position = 0;
-                    int readCount = 0;
-                    while (readCount < msgStream.Length)
+                    msgStream.Read(buffer, 0, md.MessageSize);
+                    try
                     {
-                        readCount += msgStream.Read(buffer, 0, md.BufferSize);
-                        try
-                        {
-                            client.Send(buffer);
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.Print(ex.Message);
-                            return false;
-                        }
+                        client.Send(buffer);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Print(ex.Message);
+                        return false;
                     }
                 }
                 else

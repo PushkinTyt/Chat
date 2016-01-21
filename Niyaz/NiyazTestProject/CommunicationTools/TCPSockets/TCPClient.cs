@@ -20,8 +20,8 @@ namespace CommunicationTools
 
         Thread messageHandler;
 
-        //Описываем сигнатуру метода-обработчика 
-        public delegate void ReceiveMethod(string msg);
+        //Описываем сигнатуру метода-обработчика
+        public delegate void ReceiveMethod(MetaData md, string msg);
         //Событие, на которое будут подписываться
         public event ReceiveMethod onMessage;
 
@@ -50,66 +50,9 @@ namespace CommunicationTools
             messageHandler.Start();
         }
 
-        /// <summary>
-        /// Отправляет сообщение сокету-серверу
-        /// </summary>
-        /// <param name="msg"></param>
-        public bool Send(string msg)
-        {
-            byte[] buffer;
-
-            MetaData md = new MetaData(MetaData.Roles.Client, MetaData.Actions.none);
-            //md.Encoding = Encoding.Unicode;
-            md.CalcMsgData(msg);
-
-            //Сериализуем и шлем пакет метаданных
-            MemoryStream ms = new MemoryStream();
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(ms, md);
-            ms.Position = 0;
-            buffer = new byte[ms.Length];
-            ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
-            try
-            {
-                client.Send(buffer);
-            }
-            catch(Exception ex)
-            {
-                Debug.Print(ex.Message);
-                return false;
-            }
-                
-
-            MemoryStream msgStream = new MemoryStream();
-            byte[] bytes = md.Encoding.GetBytes(msg);
-            msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
-
-            //Шлем само сообщение
-            buffer = new byte[md.BufferSize];
-            msgStream.Position = 0;
-            int readCount = 0;
-            while(readCount < msgStream.Length)
-            {
-                readCount += msgStream.Read(buffer, 0, md.BufferSize);
-                try
-                {
-                    client.Send(buffer);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Print(ex.Message);
-                    return false;
-                }
-            }
-            return true;
-        }
-
         public bool Send(string msg, MetaData md)
         {
             byte[] buffer;
-
-            //md.Encoding = Encoding.Unicode;
-            md.CalcMsgData(msg);
 
             //Сериализуем и шлем пакет метаданных
             MemoryStream ms = new MemoryStream();
@@ -134,22 +77,47 @@ namespace CommunicationTools
             msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
 
             //Шлем само сообщение
-            buffer = new byte[md.BufferSize];
+            buffer = new byte[md.MessageSize];
             msgStream.Position = 0;
-            int readCount = 0;
-            while (readCount < msgStream.Length)
+            msgStream.Read(buffer, 0, md.MessageSize);
+            try
             {
-                readCount += msgStream.Read(buffer, 0, md.BufferSize);
-                try
-                {
-                    client.Send(buffer);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Print(ex.Message);
-                    return false;
-                }
+                client.Send(buffer);
             }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Отправка метаданных без последующих данных (для отправки команд)
+        /// </summary>
+        /// <param name="md"></param>
+        /// <returns></returns>
+        public bool Send(MetaData md)
+        {
+            byte[] buffer;
+
+            //Сериализуем и шлем пакет метаданных
+            MemoryStream ms = new MemoryStream();
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(ms, md);
+            ms.Position = 0;
+            buffer = new byte[ms.Length];
+            ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
+            try
+            {
+                client.Send(buffer);
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+                return false;
+            }
+
             return true;
         }
 
@@ -181,9 +149,9 @@ namespace CommunicationTools
                 BinaryFormatter formatter = new BinaryFormatter();
                 MetaData md = (MetaData)formatter.Deserialize(ms);
 
-                buffer = new byte[md.BufferSize];
-                for (int i = 0; i < md.PackageNum; i++)
+                if(md.MessageSize > 0)
                 {
+                    buffer = new byte[md.MessageSize];
                     try
                     {
                         client.Receive(buffer);
@@ -194,11 +162,11 @@ namespace CommunicationTools
                         break;
                     }
                     msg += md.Encoding.GetString(buffer);
+
+                    msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
                 }
 
-
-                msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
-                onMessage(msg);
+                onMessage(md, msg);
             }
         }
 
