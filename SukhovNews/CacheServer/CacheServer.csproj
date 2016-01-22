@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{194C7725-41BF-4C52-A6D9-252C4ADD9695}</ProjectGuid>
+    <ProjectGuid>{F3E2BAFF-ADAB-44A8-A00F-32050BF9681D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ReferatorServer</RootNamespace>
-    <AssemblyName>ReferatorServer</AssemblyName>
+    <RootNamespace>CacheServer</RootNamespace>
+    <AssemblyName>CacheServer</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -36,7 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web.Services" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,21 +45,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheService.cs" />
+    <Compile Include="..\Services.cs">
+      <Link>Services.cs</Link>
+    </Compile>
+    <Compile Include="CachedFile.cs" />
+    <Compile Include="CacheServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RefServer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\App.config">
+      <Link>App.config</Link>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Niyaz\NiyazTestProject\CommunicationTools\CommunicationTools.csproj">
       <Project>{38eeb1d7-ef98-440e-b782-7df1f12510cb}</Project>
       <Name>CommunicationTools</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\App.config">
-      <Link>App.config</Link>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

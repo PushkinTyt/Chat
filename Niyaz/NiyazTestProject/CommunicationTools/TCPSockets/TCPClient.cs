@@ -16,7 +16,7 @@ namespace CommunicationTools
     public class TCPClient
     {
         Socket client;
-        bool shouldWork = true;
+        //bool shouldWork = true;
 
         Thread messageHandler;
 
@@ -127,7 +127,7 @@ namespace CommunicationTools
         public void ReceiveData()
         {
             int bufferSize = MetaData.defaultPacketSize;
-            while (shouldWork)
+            while (true)
             {
                 string msg = "";
 
@@ -161,6 +161,7 @@ namespace CommunicationTools
                         Debug.Print(ex.Message);
                         break;
                     }
+
                     msg += md.Encoding.GetString(buffer);
 
                     msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
@@ -175,8 +176,13 @@ namespace CommunicationTools
         /// </summary>
         public void Close()
         {
-            shouldWork = false;
+            client.Close();
             messageHandler.Abort();
+        }
+
+        ~TCPClient()
+        {
+            this.Close();
         }
     }
 }

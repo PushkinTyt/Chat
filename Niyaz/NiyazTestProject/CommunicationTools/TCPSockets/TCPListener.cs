@@ -14,10 +14,10 @@ using System.Runtime.Serialization;
 
 namespace CommunicationTools
 {
-    public class TCPSListener
+    public class TCPListener
     {
         TcpListener listener;
-        bool shouldWork = true;
+        //bool shouldWork = true;
         string adress;
 
         Thread acceptThread;
@@ -47,7 +47,7 @@ namespace CommunicationTools
         public delegate void ErrorHandler(SocketException ex, Socket socket);
         public event ErrorHandler onError;
 
-        public TCPSListener(int port)
+        public TCPListener(int port)
         {
             IPAddress[] adresses = Dns.GetHostAddresses(Dns.GetHostName());
 
@@ -61,7 +61,7 @@ namespace CommunicationTools
             acceptThread.Start();
         }
 
-        public TCPSListener(string ip, int port)
+        public TCPListener(string ip, int port)
         {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             adress = endPoint.ToString();
@@ -83,7 +83,7 @@ namespace CommunicationTools
         /// </summary>
         void acceptClients()
         {
-            while(shouldWork)
+            while(true)
             {
                 if(listener.Pending())
                 {
@@ -112,8 +112,9 @@ namespace CommunicationTools
         private void listenClient(Socket client)
         {
             int bufferSize = MetaData.defaultPacketSize;
+            IPEndPoint endPoint = (IPEndPoint)client.RemoteEndPoint;
 
-            while (shouldWork)
+            while (true)
             {
                 string msg = "";
 
@@ -148,12 +149,13 @@ namespace CommunicationTools
                         Debug.Print(ex.Message);
                         break;
                     }
+
                     msg += md.Encoding.GetString(buffer);
 
                     msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
                 }
 
-                onMessage((IPEndPoint)client.RemoteEndPoint, md, msg);
+                onMessage(endPoint, md, msg);
             }
         }
 
@@ -226,7 +228,6 @@ namespace CommunicationTools
         /// </summary>
         public void Close()
         {
-            shouldWork = false;
             acceptThread.Abort();
             clients.ToList().ForEach(x => x.Value.Close());
 
@@ -235,6 +236,9 @@ namespace CommunicationTools
             threads.ForEach(x => x.Abort());
         }
 
-
+        ~TCPListener()
+        {
+            this.Close();
+        }
     }
 }

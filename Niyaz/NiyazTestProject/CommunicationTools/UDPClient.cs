@@ -40,7 +40,6 @@ namespace CommunicationTools
             broadcastListener.Suspend();
         }
 
-
         private void BroadcastReciveProcess()
         {
             UdpClient udpReciver = new UdpClient(remotePort);
@@ -65,8 +64,12 @@ namespace CommunicationTools
             finally
             {
                 udpReciver.Close();
-
             }
+        }
+
+        ~UDPClient()
+        {
+            broadcastListener.Abort();
         }
     }
 }

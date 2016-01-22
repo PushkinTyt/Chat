@@ -21,6 +21,7 @@ namespace CommunicationTools
         const string broadcastMessage = "Dispatcher";
         Thread broadcastThread;
 
+        UdpClient broadcastSender;
 
         public UDPBroadcaster(int Port, string remoteIPAdr)
         {
@@ -43,7 +44,7 @@ namespace CommunicationTools
 
         private void BroadcastSendProcess()
         {
-            UdpClient broadcastSender = new UdpClient();
+            broadcastSender = new UdpClient();
             remoteAddress = IPAddress.Parse(remoteIP);
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, remotePort);
             try
@@ -55,7 +56,6 @@ namespace CommunicationTools
                     byte[] data = Encoding.Unicode.GetBytes(message);
                     broadcastSender.Send(data, data.Length, endPoint); // отправка
                     Thread.Sleep(broadcastInterval);
-
                 }
             }
             catch (Exception ex)
@@ -66,6 +66,12 @@ namespace CommunicationTools
             {
                 broadcastSender.Close();
             }
+        }
+
+        ~UDPBroadcaster()
+        {
+            if (broadcastThread != null)
+                broadcastThread.Abort();
         }
     }
 }

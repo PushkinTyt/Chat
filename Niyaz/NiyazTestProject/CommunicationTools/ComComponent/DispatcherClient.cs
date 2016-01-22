@@ -22,7 +22,7 @@ namespace CommunicationTools.ComComponent
             this.role = role;
         }
         
-        public void connectWithDisp()
+        public void StartListen()
         {
             if(udpClient != null)
                 udpClient.onMessage += receiveBroadcastMessage;
@@ -37,7 +37,6 @@ namespace CommunicationTools.ComComponent
             int port = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
             tcpClient = new TCPClient(endPoint.Address.ToString(), port);
 
-            register();
             onFound();
 
             udpClient.Pause();
@@ -46,7 +45,7 @@ namespace CommunicationTools.ComComponent
         public delegate void dispFound();
         public event dispFound onFound;
 
-        private void register()
+        public void Register()
         {
             MetaData md = new MetaData(role, MetaData.Actions.register);
             tcpClient.Send(md);

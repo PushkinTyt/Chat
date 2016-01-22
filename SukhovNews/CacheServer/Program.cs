@@ -4,14 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
-namespace ReferatorServer
+namespace CacheServer
 {
     class Program
     {
         static void Main(string[] args)
         {
-            RefServer server = new RefServer();
+            CacheServer cs = new CacheServer();
             Console.ReadKey();
         }
     }

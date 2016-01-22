@@ -12,6 +12,7 @@ namespace Dispatcher
     class Dispatcher
     {
         HashSet<RefServer> servers = new HashSet<RefServer>();
+        string cacheServer = "";
 
         public Dispatcher()
         {
@@ -19,7 +20,7 @@ namespace Dispatcher
             Console.WriteLine("****** Диспетчер запущен ******");
 
             int tcpport = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
-            TCPSListener listener = new TCPSListener(tcpport);
+            TCPListener listener = new TCPListener(tcpport);
             listener.onMessage += handleRequest;
             listener.StartListen();
             Console.WriteLine("TCP слушает по адресу " + listener.Adress);
@@ -50,12 +51,20 @@ namespace Dispatcher
         {
             if(role == MetaData.Roles.cache)
             {
-                //Добавление кэш-сервера
+                cacheServer = endpoint.Address.ToString();
+                Console.WriteLine("Зарегистрирован кэш-сервер по адресу " + endpoint.Address.ToString());
+
+                servers.ToList().ForEach(x => x.SendCacheIP(cacheServer));
             }
             else
             {
-                servers.Add(new RefServer(endpoint));
+                var rs = new RefServer(endpoint);
+                servers.Add(rs);
                 Console.WriteLine("Зарегистрирован сервер реферирования по адресу " + endpoint.Address.ToString());
+                if(cacheServer != null)
+                {
+                    rs.SendCacheIP(cacheServer);
+                }
             }
         }
 
