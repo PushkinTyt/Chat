@@ -19,11 +19,17 @@ namespace CommunicationTools
         //bool shouldWork = true;
 
         Thread messageHandler;
+        Thread pingThread;
 
         //Описываем сигнатуру метода-обработчика
         public delegate void ReceiveMethod(MetaData md, string msg);
         //Событие, на которое будут подписываться
         public event ReceiveMethod onMessage;
+
+        //Событие дисконнекта
+        public delegate void DisconnectHandler();
+        public event DisconnectHandler onDisconnect;
+
 
         public TCPClient(string ip, int port)
         {
@@ -33,8 +39,29 @@ namespace CommunicationTools
             try
             {
                 client.Connect(endpoint);
+                pingThread = new Thread(ping);
+                pingThread.Start();
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Reconnect(string ip, int port)
+        {
+            this.Close();
+
+            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
+            client = new TcpClient();
+
+            try
+            {
+                client.Connect(endpoint);
+                pingThread = new Thread(ping);
+                pingThread.Start();
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -49,7 +76,25 @@ namespace CommunicationTools
             messageHandler.Start();
         }
 
-        public bool Send(string msg, MetaData md)
+        void ping()
+        {
+            MetaData pingPackage = new MetaData(MetaData.Roles.none, MetaData.Actions.ping);
+            try
+            {
+                while (true)
+                {
+                    this.Send("", pingPackage);
+                    Thread.Sleep(300);
+                }
+            }
+            catch
+            {
+                onDisconnect();
+                return;
+            }
+        }
+
+        public void Send(string msg, MetaData md)
         {
             NetworkStream socketStream = client.GetStream();
 
@@ -64,17 +109,7 @@ namespace CommunicationTools
             ms.Position = 0;
             ms.Read(generalMsg, 0, (int)ms.Length);
 
-            try
-            {
-                socketStream.Write(generalMsg, 0, generalMsg.Length);
-            }
-            catch(Exception ex)
-            {
-                Debug.Print(ex.Message);
-                return false;
-            }
-
-            return true;
+            socketStream.Write(generalMsg, 0, generalMsg.Length);
         }
 
         /// <summary>
@@ -128,6 +163,7 @@ namespace CommunicationTools
                 client.Client.Shutdown(SocketShutdown.Both);
                 client.Close();
                 messageHandler.Abort();
+                pingThread.Abort();
             }
         }
 

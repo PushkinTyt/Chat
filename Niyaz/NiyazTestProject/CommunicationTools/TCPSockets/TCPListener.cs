@@ -44,7 +44,7 @@ namespace CommunicationTools
 
 
         //Обработка ошибок
-        public delegate void ErrorHandler(SocketException ex, Socket socket);
+        public delegate void ErrorHandler(SocketException ex, TCPListener tcpListener);
         public event ErrorHandler onError;
 
         public TCPListener(int port)
@@ -54,7 +54,14 @@ namespace CommunicationTools
             IPAddress compIP = adresses.First(x => x.AddressFamily == AddressFamily.InterNetwork);
             IPEndPoint endPoint = new IPEndPoint(compIP, port);
             adress = endPoint.ToString();
-            listener = new TcpListener(endPoint);
+            try
+            {
+                listener = new TcpListener(endPoint);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public TCPListener(string ip, int port)
@@ -79,11 +86,11 @@ namespace CommunicationTools
         /// </summary>
         void acceptClients()
         {
-            while(true)
+            while (true)
             {
-                if(listener.Pending())
+                try
                 {
-                    try
+                    if (listener.Pending())
                     {
                         TcpClient client = listener.AcceptTcpClient();
                         clients.Add(client.Client.RemoteEndPoint, client);
@@ -92,11 +99,11 @@ namespace CommunicationTools
 
                         threads.Add(clientHandler);
                     }
-                    catch(Exception ex)
-                    {
-                        Debug.Print(ex.Message);
-                    }
-
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                    break;
                 }
             }
         }
@@ -121,23 +128,26 @@ namespace CommunicationTools
 
                         MetaData md = (MetaData)formatter.Deserialize(networkStream);
 
-                        string msg = "";
-                        int bufSize = 512;
-                        byte[] msgBytes = new byte[bufSize];
-
-                        if (md.MessageSize > 0)
+                        if(md.Action != MetaData.Actions.ping)
                         {
-                            networkStream.Read(msgBytes, 0, md.MessageSize);
-                            msg = md.Encoding.GetString(msgBytes);
+                            string msg = "";
+                            int bufSize = 512;
+                            byte[] msgBytes = new byte[bufSize];
 
-                            msg = msg.TrimEnd('\0');
+                            if (md.MessageSize > 0)
+                            {
+                                networkStream.Read(msgBytes, 0, md.MessageSize);
+                                msg = md.Encoding.GetString(msgBytes);
+
+                                msg = msg.TrimEnd('\0');
+                            }
+
+                            onMessage(endPoint, md, msg);
                         }
-
-                        onMessage(endPoint, md, msg);
                     }
                     Thread.Sleep(500);
                 }
-                catch (Exception ex)
+                catch (SocketException ex)
                 {
                     Debug.Print(ex.Message);
                     clients.Remove(client.Client.RemoteEndPoint);
@@ -154,10 +164,9 @@ namespace CommunicationTools
         /// </summary>
         /// <param name="endpoint"></param>
         /// <param name="msg">Пересылаемое сообщение</param>
-        public bool Send(IPEndPoint endpoint, string msg, MetaData md)
+        public void Send(IPEndPoint endpoint, string msg, MetaData md)
         {
             TcpClient client = clients[endpoint];
-            NetworkStream socketStream = client.GetStream();
 
             MemoryStream ms = new MemoryStream();
             BinaryFormatter formatter = new BinaryFormatter();
@@ -170,9 +179,8 @@ namespace CommunicationTools
             ms.Position = 0;
             ms.Read(generalMsg, 0, (int)ms.Length);
 
+            NetworkStream socketStream = client.GetStream();
             socketStream.Write(generalMsg, 0, generalMsg.Length);
-
-            return true;
         }
 
         /// <summary>
@@ -183,8 +191,8 @@ namespace CommunicationTools
             acceptThread.Abort();
             clients.ToList().ForEach(x =>
                     {
-                    x.Value.Client.Shutdown(SocketShutdown.Both);
-                    x.Value.Close();
+                        x.Value.Client.Shutdown(SocketShutdown.Both);
+                        x.Value.Close();
                     });
 
             listener.Stop();

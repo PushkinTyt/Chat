@@ -17,6 +17,8 @@ namespace CommunicationTools.ComComponent
         TCPClient tcpClient;
         UDPClient udpClient = new UDPClient();
 
+        bool connected = false;
+
         public DispatcherClient(MetaData.Roles role)
         {
             this.role = role;
@@ -36,9 +38,17 @@ namespace CommunicationTools.ComComponent
 
             int port = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
             tcpClient = new TCPClient(endPoint.Address.ToString(), port);
+            tcpClient.onDisconnect += TcpClient_onDisconnect;
+            tcpClient.StartListen();
 
             onFound();
             udpClient.Pause();
+        }
+
+        private void TcpClient_onDisconnect()
+        {
+            Console.WriteLine("Прервано соединение с диспетчером.");
+            connected = false;
         }
 
         public delegate void dispFound();
@@ -47,9 +57,15 @@ namespace CommunicationTools.ComComponent
         public void Register()
         {
             MetaData md = new MetaData(role, MetaData.Actions.register);
-            if(tcpClient.Send("", md))
+            try
             {
+                tcpClient.Send("", md);
                 Console.WriteLine("Регистрация на сервера пройдена");
+                connected = true;
+            }
+            catch(SocketException ex)
+            {
+                Console.WriteLine("Не удалось зарегестрироваться на сервере. " + ex.Message);
             }
         }
     }

@@ -16,7 +16,7 @@ namespace CommunicationTools
         static public int defaultPackageSize = 4096;
 
         public enum Roles { none, dispatcher, server, cache, client };
-        public enum Actions { none, refText, refNews, register, getCacheAdress };
+        public enum Actions { none, refText, refNews, register, getCacheAdress, ping };
         public enum ContentTypes { link, plainText, xml, binary, none };
 
         int messageSize = 0;
