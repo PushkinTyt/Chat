@@ -8,14 +8,13 @@ using System.Threading;
 
 namespace CommunicationTools
 {
-    class MSMQListener
+    public class MSMQListener
     {
         Thread subscribeHandler;
         MessageQueue mq;
-        bool shouldWork;
 
         //Описываем сигнатуру метода-обработчика 
-        public delegate void ReceiveMethod(string msg);
+        public delegate void ReceiveMethod(string msg, string label);
         //Событие, на которое будут подписываться
         public event ReceiveMethod onMessage;
 
@@ -50,19 +49,26 @@ namespace CommunicationTools
 
         void sendToSubscriber()
         {
-            TimeSpan timeout = new TimeSpan(0, 0, 5); //Ждем сообщение максимум 5 секунд (чтобы не застрять в потоке навеки)
-
-            while (shouldWork)
+            while (true)
             {
                 //Ждем пока не появится сообщение
-                Message msg = mq.Peek(timeout);
-
-                //Отправляяем подписчикам
-                if (msg != null && onMessage != null)
+                try
                 {
-                    mq.Receive();
-                    onMessage(msg.Body.ToString());
+                    Message msg = mq.Peek();
+
+                    //Отправляяем подписчикам
+                    if (msg != null && onMessage != null)
+                    {
+                        mq.Receive();
+                        onMessage(msg.Body.ToString(), msg.Label);
+                    }
                 }
+                catch
+                {
+                    mq.Close();
+                    break;
+                }
+
             }
         }
 
@@ -74,7 +80,6 @@ namespace CommunicationTools
 
         public void Close()
         {
-            shouldWork = false;
             if (subscribeHandler != null)
             {
                 subscribeHandler.Abort();

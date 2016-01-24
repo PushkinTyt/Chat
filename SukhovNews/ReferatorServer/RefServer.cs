@@ -14,6 +14,7 @@ namespace ReferatorServer
     {
         DispatcherClient dc;
         CacheServer cs;
+        MSMQClient cacheMSMQ;
 
         TCPListener tcpListener;
 
@@ -22,6 +23,7 @@ namespace ReferatorServer
             int tcpPort = Convert.ToInt32(ConfigurationManager.AppSettings["refServerPort"].ToString());
             tcpListener = new TCPListener(tcpPort);
             tcpListener.onMessage += TcpListener_onMessage;
+            tcpListener.StartListen();
 
             dc = new DispatcherClient(MetaData.Roles.server);
             dc.onFound += dispFound;
@@ -46,17 +48,47 @@ namespace ReferatorServer
         void conToCacheServer(string ip)
         {
             UriBuilder uriBuilder = new UriBuilder(ip);
-            uriBuilder.Port = Convert.ToInt32(ConfigurationManager.AppSettings["cacheServicePort"].ToString()); ;
+            uriBuilder.Port = Convert.ToInt32(ConfigurationManager.AppSettings["cacheServicePort"].ToString());
 
             cs = new CacheServer(uriBuilder.Uri.ToString());
 
             Console.WriteLine("Запущен клиент сервиса кэш-сервера");
+
+            string msmqName = ConfigurationManager.AppSettings["cacheMSMQName"];
+            cacheMSMQ = new MSMQClient(ip, msmqName);
+
+            refNews("http://www.youtube.com/watch?v=ZldDX8h4rpg");
+            refNews("http://www.youtube.com/watch?v=ZldDX8h4rpg");
         }
 
         //Действия, при нахождении диспетчера
         void dispFound()
         {
+            Console.WriteLine("Попытка зарегистрироваться на диспетчере");
             dc.Register();
+        }
+
+        void refNews(string URL)
+        {
+            bool cacheExists;
+            bool passed;
+
+            string rangeSentences;
+
+            cs.cacheFileExists(URL, out cacheExists, out passed);
+            if(cacheExists && passed)
+            {
+                rangeSentences = cs.getCachedFile(URL); 
+            }
+            else
+            {
+                cs.notifyReferation(URL);
+                //Реферирование
+                if(cacheMSMQ != null)
+                {
+                    cacheMSMQ.Send("XMLTEXT", URL); //Вместо первого аргумента сериализованный реферат
+                }
+            }
         }
     }
 }

@@ -33,13 +33,13 @@ namespace Dispatcher
         {
             MetaData.Roles role = md.Role;
 
-            //Херня. При добавлении новых функций - придется переписывать эту часть.
-            //TODO: придумать что-то поадекватнее
             switch (role)
             {
                 case MetaData.Roles.cache:
+                    register(endpoint, MetaData.Roles.cache);
+                    break;
                 case MetaData.Roles.server:
-                    register(endpoint, role);
+                    register(endpoint, MetaData.Roles.server);
                     break;
                 case MetaData.Roles.client:
                     pickServerForClient(endpoint);
@@ -49,7 +49,7 @@ namespace Dispatcher
 
         void register(IPEndPoint endpoint, MetaData.Roles role)
         {
-            if(role == MetaData.Roles.cache)
+            if (role == MetaData.Roles.cache)
             {
                 cacheServer = endpoint.Address.ToString();
                 Console.WriteLine("Зарегистрирован кэш-сервер по адресу " + endpoint.Address.ToString());
@@ -61,7 +61,7 @@ namespace Dispatcher
                 var rs = new RefServer(endpoint);
                 servers.Add(rs);
                 Console.WriteLine("Зарегистрирован сервер реферирования по адресу " + endpoint.Address.ToString());
-                if(cacheServer != null)
+                if (cacheServer != String.Empty)
                 {
                     rs.SendCacheIP(cacheServer);
                 }

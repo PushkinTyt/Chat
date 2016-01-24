@@ -13,7 +13,7 @@ namespace CommunicationTools
     {
         //Дефолтные параметры используются при пересылке метаданных (т.е. этого класса)
         [NonSerialized]
-        static public int defaultPacketSize = 2048;
+        static public int defaultPackageSize = 4096;
 
         public enum Roles { none, dispatcher, server, cache, client };
         public enum Actions { none, refText, refNews, register, getCacheAdress };

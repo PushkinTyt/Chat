@@ -29,10 +29,10 @@ namespace CacheServer
             char[] illegalChars = Path.GetInvalidFileNameChars();
             foreach (char ilChar in illegalChars)
             {
-                URL = URL.Replace(ilChar, '\0');
+                URL = URL.Replace(ilChar.ToString(), string.Empty);
             }
 
-            string path = CacheFolder + "\\" + URL + ".xml";
+            path = CacheFolder + "\\" + URL + ".xml";
             File.WriteAllText(path, xmlFile);
 
             ready = true;

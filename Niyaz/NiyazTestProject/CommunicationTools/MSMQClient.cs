@@ -7,7 +7,7 @@ using System.Messaging;
 
 namespace CommunicationTools
 {
-    class MSMQClient
+    public class MSMQClient
     {
         MessageQueue mq;
 
@@ -17,9 +17,9 @@ namespace CommunicationTools
             mq.Formatter = new XmlMessageFormatter(new Type[] { typeof(String) });
         }
 
-        public void Send(string msg)
+        public void Send(string msg, string lable)
         {
-            mq.Send(msg);
+            mq.Send(msg, lable);
         }
 
     }

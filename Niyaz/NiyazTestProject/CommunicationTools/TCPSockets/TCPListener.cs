@@ -23,7 +23,7 @@ namespace CommunicationTools
         Thread acceptThread;
         List<Thread> threads = new List<Thread>();
 
-        Dictionary<EndPoint, Socket> clients = new Dictionary<EndPoint, Socket>();
+        Dictionary<EndPoint, TcpClient> clients = new Dictionary<EndPoint, TcpClient>();
 
         /// <summary>
         /// IP-адрес машины, на которой работает этот сокет
@@ -55,10 +55,6 @@ namespace CommunicationTools
             IPEndPoint endPoint = new IPEndPoint(compIP, port);
             adress = endPoint.ToString();
             listener = new TcpListener(endPoint);
-
-            listener.Start();
-            acceptThread = new Thread(acceptClients);
-            acceptThread.Start();
         }
 
         public TCPListener(string ip, int port)
@@ -89,8 +85,8 @@ namespace CommunicationTools
                 {
                     try
                     {
-                        Socket client = listener.AcceptSocket();
-                        clients.Add(client.RemoteEndPoint, client);
+                        TcpClient client = listener.AcceptTcpClient();
+                        clients.Add(client.Client.RemoteEndPoint, client);
                         Thread clientHandler = new Thread(() => listenClient(client));
                         clientHandler.Start();
 
@@ -109,53 +105,47 @@ namespace CommunicationTools
         /// Принимает сообщение от клиентов. При получении сообщения генерируется событие onMessage
         /// </summary>
         /// <param name="client">Обрабатываемый клиент</param>
-        private void listenClient(Socket client)
+        private void listenClient(TcpClient client)
         {
-            int bufferSize = MetaData.defaultPacketSize;
-            IPEndPoint endPoint = (IPEndPoint)client.RemoteEndPoint;
+            int bufferSize = MetaData.defaultPackageSize;
+            IPEndPoint endPoint = (IPEndPoint)client.Client.RemoteEndPoint;
+            NetworkStream networkStream = client.GetStream();
 
             while (true)
             {
-                string msg = "";
-
-                byte[] buffer = new byte[bufferSize];
-
                 try
                 {
-                    client.Receive(buffer);
+                    if (client.Available > 0)
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+
+                        MetaData md = (MetaData)formatter.Deserialize(networkStream);
+
+                        string msg = "";
+                        int bufSize = 512;
+                        byte[] msgBytes = new byte[bufSize];
+
+                        if (md.MessageSize > 0)
+                        {
+                            networkStream.Read(msgBytes, 0, md.MessageSize);
+                            msg = md.Encoding.GetString(msgBytes);
+
+                            msg = msg.TrimEnd('\0');
+                        }
+
+                        onMessage(endPoint, md, msg);
+                    }
+                    Thread.Sleep(500);
                 }
-                catch(SocketException ex)
+                catch (Exception ex)
                 {
                     Debug.Print(ex.Message);
+                    clients.Remove(client.Client.RemoteEndPoint);
+                    client.Client.Shutdown(SocketShutdown.Both);
+                    client.Close();
+                    threads.Remove(Thread.CurrentThread);
                     break;
                 }
-
-                BinaryFormatter formatter = new BinaryFormatter();
-                MemoryStream ms = new MemoryStream();
-                ms.Write(buffer, 0, bufferSize);
-                ms.Position = 0;
-
-                MetaData md = (MetaData) formatter.Deserialize(ms);
-
-                if(md.MessageSize > 0)
-                {
-                    buffer = new byte[md.MessageSize];
-                    try
-                    {
-                        client.Receive(buffer);
-                    }
-                    catch (SocketException ex)
-                    {
-                        Debug.Print(ex.Message);
-                        break;
-                    }
-
-                    msg += md.Encoding.GetString(buffer);
-
-                    msg = msg.TrimEnd('\0'); //В UTF-8 в конце строки куча \0, консоли это не нравится
-                }
-
-                onMessage(endPoint, md, msg);
             }
         }
 
@@ -166,60 +156,22 @@ namespace CommunicationTools
         /// <param name="msg">Пересылаемое сообщение</param>
         public bool Send(IPEndPoint endpoint, string msg, MetaData md)
         {
-            Socket client = clients[endpoint];
+            TcpClient client = clients[endpoint];
+            NetworkStream socketStream = client.GetStream();
 
-            if (client != null)
-            {
-                if (client.Connected)
-                {
-                    byte[] buffer;
+            MemoryStream ms = new MemoryStream();
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(ms, md);
 
-                    MemoryStream msgStream = new MemoryStream();
-                    byte[] bytes = md.Encoding.GetBytes(msg);
-                    msgStream.Write(md.Encoding.GetBytes(msg), 0, bytes.Length);
+            byte[] msgBytes = md.Encoding.GetBytes(msg);
+            ms.Write(msgBytes, 0, msgBytes.Length);
 
-                    MemoryStream ms = new MemoryStream();
-                    BinaryFormatter formatter = new BinaryFormatter();
+            byte[] generalMsg = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(generalMsg, 0, (int)ms.Length);
 
-                    //Шлем административный пакет
-                    formatter.Serialize(ms, md);
-                    ms.Position = 0;
-                    buffer = new byte[ms.Length];
-                    ms.Read(buffer, 0, Convert.ToInt32(ms.Length));
-                    try
-                    {
-                        client.Send(buffer);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Print(ex.Message);
-                        return false;
-                    }
+            socketStream.Write(generalMsg, 0, generalMsg.Length);
 
-                    //Шлем сообщение
-                    buffer = new byte[md.MessageSize];
-                    msgStream.Position = 0;
-                    msgStream.Read(buffer, 0, md.MessageSize);
-                    try
-                    {
-                        client.Send(buffer);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Print(ex.Message);
-                        return false;
-                    }
-                }
-                else
-                {
-                    Debug.Print("Client is not connected");
-                    return false;
-                }
-            }
-            else
-            {
-                throw new Exception("Нет такого клиента, смотри, что пихаешь, остолоп!");
-            }
             return true;
         }
 
@@ -229,7 +181,11 @@ namespace CommunicationTools
         public void Close()
         {
             acceptThread.Abort();
-            clients.ToList().ForEach(x => x.Value.Close());
+            clients.ToList().ForEach(x =>
+                    {
+                    x.Value.Client.Shutdown(SocketShutdown.Both);
+                    x.Value.Close();
+                    });
 
             listener.Stop();
 

@@ -42,12 +42,19 @@ namespace CommunicationTools
 
         private void BroadcastReciveProcess()
         {
-            UdpClient udpReciver = new UdpClient(remotePort);
+            UdpClient udpReciver = new UdpClient();
+            udpReciver.ExclusiveAddressUse = false;
+            IPEndPoint ip = new IPEndPoint(IPAddress.Any, 8555);
+
+            //Волшебные строки для запуска нескольких приложений, использующих один адрес или порт
+            udpReciver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            udpReciver.ExclusiveAddressUse = false;
+            udpReciver.Client.Bind(ip);
+
             try
             {
                 while (true)
                 {
-                    IPEndPoint ip = new IPEndPoint(IPAddress.Any, 8555);
                     byte[] data = udpReciver.Receive(ref ip);
                     string message = Encoding.Unicode.GetString(data);
                     dispatcherEndPoint = ip;
@@ -59,7 +66,7 @@ namespace CommunicationTools
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(this.GetType().Name + ":" + ex.Message);
             }
             finally
             {

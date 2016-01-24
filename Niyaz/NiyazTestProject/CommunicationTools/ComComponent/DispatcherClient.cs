@@ -38,7 +38,6 @@ namespace CommunicationTools.ComComponent
             tcpClient = new TCPClient(endPoint.Address.ToString(), port);
 
             onFound();
-
             udpClient.Pause();
         }
 
@@ -48,7 +47,10 @@ namespace CommunicationTools.ComComponent
         public void Register()
         {
             MetaData md = new MetaData(role, MetaData.Actions.register);
-            tcpClient.Send(md);
+            if(tcpClient.Send("", md))
+            {
+                Console.WriteLine("Регистрация на сервера пройдена");
+            }
         }
     }
 }

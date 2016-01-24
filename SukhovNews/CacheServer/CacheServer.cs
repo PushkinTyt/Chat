@@ -11,16 +11,19 @@ using System.Net.Sockets;
 using System.ServiceModel;
 using System.Configuration;
 using System.ServiceModel.Description;
+using System.Threading;
 
 namespace CacheServer
 {
-    class CacheServer : ICacheService
+    class CacheServer
     {
         DispatcherClient dc;
         ServiceHost host;
 
         //URL, Физический путь к файлу
-        Dictionary<string, CachedFile> files = new Dictionary<string, CachedFile>();
+        MSMQListener msmqListener;
+
+        private static ManualResetEvent _ResetEvent = new ManualResetEvent(false);
 
         public CacheServer()
         {
@@ -28,53 +31,40 @@ namespace CacheServer
             dc.onFound += dispFound;
             dc.StartListen();
 
-            startService();
-
             if (!Directory.Exists(CachedFile.CacheFolder))
             {
                 Directory.CreateDirectory(CachedFile.CacheFolder);
             }
+
+            string msmqName = ConfigurationManager.AppSettings["cacheMSMQName"];
+            msmqListener = new MSMQListener(msmqName);
+            msmqListener.onMessage += MsmqListener_onMessage;
+            msmqListener.StartListen();
         }
 
-        //http://stackoverflow.com/questions/5907791/how-to-programatically-create-a-wcf-service-and-its-metadata-on-the-same-url
-        void startService()
+        private void MsmqListener_onMessage(string msg, string tag)
         {
-            int port = Convert.ToInt32(ConfigurationManager.AppSettings["cacheServicePort"].ToString());
-            IPAddress[] adresses = Dns.GetHostAddresses(Dns.GetHostName());
-            IPAddress compIP = adresses.First(x => x.AddressFamily == AddressFamily.InterNetwork);
-            UriBuilder uriBuilder = new UriBuilder(compIP.ToString());
-            uriBuilder.Port = port;
-            Uri serviceUri = uriBuilder.Uri;
-
-            BasicHttpBinding binding = new BasicHttpBinding();
-            host = new ServiceHost(typeof(CacheServer), serviceUri);
+            CachedFile file;
+            try
+            {
+                file = CacheService.files[tag];
+            }
+            catch
+            {
+                file = null;
+            }
             
-            host.Description.Behaviors.Add(new ServiceMetadataBehavior { HttpGetEnabled = true});
-            host.Description.Behaviors.Find<ServiceDebugBehavior>().IncludeExceptionDetailInFaults = true;
-            host.Description.Behaviors.Find<ServiceDebugBehavior>().HttpHelpPageUrl = serviceUri;
 
-            host.AddServiceEndpoint(typeof(ICacheService), binding, string.Empty);
-
-            host.Open();
-
-            Console.WriteLine("Запущен веб-сервис для отправки cache по адресу " + serviceUri.AbsoluteUri);
-            
-        }
-
-        public bool cacheFileExists(string URL)
-        {
-            return files.ContainsKey(URL);
-        }
-
-        public string getCachedFile(string URL)
-        {
-            return files[URL].ReadFile();
-        }
-
-        public void notifyReferation(string URL)
-        {
-            CachedFile file = new CachedFile();
-            files.Add(URL, file);
+            if (file != null)
+            {
+                file.WriteFile(tag, msg);
+            }
+            else
+            {
+                file = new CachedFile();
+                file.WriteFile(tag, msg);
+                CacheService.files.Add(tag, file);
+            }
         }
 
         //Действия, при нахождении диспетчера
@@ -82,6 +72,5 @@ namespace CacheServer
         {
             dc.Register();
         }
-
     }
 }
