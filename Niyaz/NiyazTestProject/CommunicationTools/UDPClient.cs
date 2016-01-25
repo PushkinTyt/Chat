@@ -11,7 +11,6 @@ namespace CommunicationTools
 {
     public class UDPClient
     {
-        private static string remoteIP = "239.254.255.255";
         const int remotePort = 8555;
         private static IPAddress remoteAddress;
         private static IPEndPoint dispatcherEndPoint = null;
@@ -20,9 +19,12 @@ namespace CommunicationTools
         public delegate void receiveBroadcastMessage(IPEndPoint endPoint, string message);
         public event receiveBroadcastMessage onMessage;
 
+        public delegate void Error(string errorDescr);
+        public event Error onError;
+
         public void Start()
         {
-            remoteAddress = IPAddress.Parse(remoteIP);
+            //remoteAddress = IPAddress.Parse(remoteIP);
             try
             {
                 if(broadcastListener != null)
@@ -34,7 +36,7 @@ namespace CommunicationTools
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                onError(ex.Message);
             }
         }
 
@@ -59,6 +61,10 @@ namespace CommunicationTools
 
                 while (true)
                 {
+<<<<<<< HEAD
+=======
+                    IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);
+>>>>>>> refs/remotes/origin/LIVBranch
                     byte[] data = udpReciver.Receive(ref ip);
                     string message = Encoding.Unicode.GetString(data);
                     dispatcherEndPoint = ip;
@@ -69,10 +75,20 @@ namespace CommunicationTools
                     Thread.Sleep(300);
                 }
             }
+<<<<<<< HEAD
             catch(ThreadAbortException)
             {
                 udpReciver.Close();
                 return;
+=======
+            catch (Exception ex)
+            {
+                onError(ex.Message);
+            }
+            finally
+            {
+                udpReciver.Close();
+>>>>>>> refs/remotes/origin/LIVBranch
             }
 
         }
