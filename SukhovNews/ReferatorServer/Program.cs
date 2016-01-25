@@ -12,9 +12,7 @@ namespace ReferatorServer
         static void Main(string[] args)
         {
             RefServer server = new RefServer();
-
             //server.Register();
-
             Console.ReadKey();
         }
     }

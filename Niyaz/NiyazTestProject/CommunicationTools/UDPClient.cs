@@ -50,9 +50,8 @@ namespace CommunicationTools
             UdpClient udpReciver = new UdpClient();
             try
             {
-
                 udpReciver.ExclusiveAddressUse = false;
-                IPEndPoint ip = new IPEndPoint(IPAddress.Any, 8555);
+                IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);
 
                 //Волшебные строки для запуска нескольких приложений, использующих один адрес или порт
                 udpReciver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -62,7 +61,7 @@ namespace CommunicationTools
                 while (true)
                 {
 
-
+                    //IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);
                     byte[] data = udpReciver.Receive(ref ip);
                     string message = Encoding.Unicode.GetString(data);
                     dispatcherEndPoint = ip;
@@ -86,7 +85,6 @@ namespace CommunicationTools
             finally
             {
                 udpReciver.Close();
-
             }
 
         }

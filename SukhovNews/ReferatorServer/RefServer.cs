@@ -56,9 +56,6 @@ namespace ReferatorServer
 
             string msmqName = ConfigurationManager.AppSettings["cacheMSMQName"];
             cacheMSMQ = new MSMQClient(ip, msmqName);
-
-            refNews("http://www.youtube.com/watch?v=ZldDX8h4rpg");
-            refNews("http://www.youtube.com/watch?v=ZldDX8h4rpg");
         }
 
         //Действия, при нахождении диспетчера
