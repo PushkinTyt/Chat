@@ -50,7 +50,7 @@ namespace CommunicationTools
             UdpClient udpReciver = new UdpClient();
             try
             {
-                
+
                 udpReciver.ExclusiveAddressUse = false;
                 IPEndPoint ip = new IPEndPoint(IPAddress.Any, 8555);
 
@@ -61,10 +61,8 @@ namespace CommunicationTools
 
                 while (true)
                 {
-<<<<<<< HEAD
-=======
-                    IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);
->>>>>>> refs/remotes/origin/LIVBranch
+
+
                     byte[] data = udpReciver.Receive(ref ip);
                     string message = Encoding.Unicode.GetString(data);
                     dispatcherEndPoint = ip;
@@ -75,12 +73,12 @@ namespace CommunicationTools
                     Thread.Sleep(300);
                 }
             }
-<<<<<<< HEAD
-            catch(ThreadAbortException)
+
+            catch (ThreadAbortException)
             {
                 udpReciver.Close();
                 return;
-=======
+            }
             catch (Exception ex)
             {
                 onError(ex.Message);
@@ -88,7 +86,7 @@ namespace CommunicationTools
             finally
             {
                 udpReciver.Close();
->>>>>>> refs/remotes/origin/LIVBranch
+
             }
 
         }

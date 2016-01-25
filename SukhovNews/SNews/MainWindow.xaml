@@ -5,7 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SNews"
         mc:Ignorable="d"
-        Title="SNews" Height="530" Width="820">
+        Title="SNews"
+        Height="530"
+        MinHeight="530"
+        Width="800"
+        MinWidth="800">
     <Window.Resources>
         <ControlTemplate TargetType="Button" x:Key="lfBtn">
             <Border Name="MyName" CornerRadius="5" BorderBrush="Bisque" BorderThickness="1" >
@@ -21,7 +25,7 @@
                 </Grid>
             </Border>
         </ControlTemplate>
-        
+
         <Style TargetType="Button" x:Key="channelBtn">
             <Setter Property="BorderThickness" Value="0 0 0 3" />
             <Setter Property="Button.Background" Value="Transparent" />
@@ -48,39 +52,67 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    
+
     <Grid Background="White">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="25*"/>
             <ColumnDefinition Width="210*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" HorizontalAlignment="Left"  VerticalAlignment="Top"  Background="#B2FFFFFF">
+        <StackPanel Grid.Column="0" MinWidth="90" HorizontalAlignment="Left"  VerticalAlignment="Top"  Background="#B2FFFFFF">
             <Button x:Name="btnExpand" Content="Update" Template="{StaticResource btn_article}"  HorizontalAlignment="Stretch" Click="UpdateChannels_Click"/>
-            <Button x:Name="btnReferate" Content="Referate" Template="{StaticResource btn_article}" />
+            <Button x:Name="btnReferate" Content="Referate" Template="{StaticResource btn_article}"  />
             <Button x:Name="btnLoadFullArticle" Content="Посмотреть" Template="{StaticResource btn_article}"  Click="fullTextArticle_Click"/>
         </StackPanel>
 
-        <Grid Grid.Column="1" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Background="#FF724848" >
+        <Grid Grid.Column="1"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Margin="0,0,0,0"
+              >
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.10*"/>
+                <RowDefinition Height="43"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <WrapPanel x:Name="CategoryWrap" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="0" Grid.Row="0" Background="white" Orientation="Horizontal">
+            <WrapPanel x:Name="CategoryWrap"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Stretch"
+                       Margin="2,10,0,0" Grid.Row="0"
+                       Background="white"
+                       MinWidth="260"
+                       Orientation="Horizontal" Height="33">
                 <TextBlock Margin="15 0" HorizontalAlignment="Center" VerticalAlignment="Center">Категория</TextBlock>
-                <ComboBox x:Name="cmbCategoryList" VerticalAlignment="Center" Width="150" SelectionChanged="cmbCategoryList_SelectionChanged"/>
+                <ComboBox Margin="0,5" x:Name="cmbCategoryList" VerticalAlignment="Center" MinWidth="145" SelectionChanged="cmbCategoryList_SelectionChanged"/>
             </WrapPanel>
             <ListView x:Name="lvArticles" HorizontalAlignment="Stretch" Margin="2" Grid.Row="1" VerticalAlignment="Stretch">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=Title}">Заголовок</GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=PubDate, StringFormat=dd.MM.yy / H:mm}">Дата/время</GridViewColumn>
+                        <GridViewColumn Width="550" DisplayMemberBinding="{Binding Path=Title}">Заголовок</GridViewColumn>
+                        <GridViewColumn Width="auto"  DisplayMemberBinding="{Binding Path=PubDate, StringFormat=dd.MM.yy / H:mm}">Дата/время</GridViewColumn>
                     </GridView>
                 </ListView.View>
                 <ListView.Resources>
 
                 </ListView.Resources>
             </ListView>
+            <Grid x:Name="CBSersicView"
+                  HorizontalAlignment="Left"
+                  Height="47" Margin="363,0,-8,0"
+                  VerticalAlignment="Top"
+                  MinWidth="353" Grid.RowSpan="2"
+                  MouseEnter="CBSersicView_MouseEnter"
+                  Loaded="Image_Loaded" Width="353"
+                  >
+                <Image x:Name="imageUS"
+                       HorizontalAlignment="Left"
+                       Height="27"
+                       VerticalAlignment="Top"
+                       Width="61"
+                       Margin="0,10,0,0"/>
+                <Label x:Name="TextUS" Content="Загрузка..." HorizontalAlignment="Left" Height="27" Margin="61,10,0,0" VerticalAlignment="Top" Width="89"/>
+                <Image x:Name="imageEVR" HorizontalAlignment="Left" Height="27" Margin="170,10,0,0" VerticalAlignment="Top" Width="69"/>
+                <Label x:Name="TextEVR" Content="Загрузка..." HorizontalAlignment="Left" Height="27" Margin="244,10,0,0" VerticalAlignment="Top" Width="99"/>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

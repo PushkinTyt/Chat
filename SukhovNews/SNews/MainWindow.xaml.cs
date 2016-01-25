@@ -7,7 +7,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using CommunicationTools;
 using System.Net;
-
+using System.Windows.Media.Imaging;
 
 namespace SNews
 {
@@ -19,12 +19,30 @@ namespace SNews
         private List<RssChannel> rssChanels;
         private UDPClient broadCast;
         private string ipDispatcher;
+        private CB.DailyInfoSoapClient CBServis;
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
             InitializeComponent();
-            
+            CBServis = new CB.DailyInfoSoapClient();
+            try
+            {
+                System.Data.DataSet Curs = CBServis.GetCursOnDate(System.DateTime.Now);
+                TextUS.Content = Curs.Tables[0].Rows[9].ItemArray[2].ToString();
+                TextEVR.Content = Curs.Tables[0].Rows[10].ItemArray[2].ToString();
+            }
+            catch (Exception )
+            {
+                TextUS.Content = "Сервис не доступен";
+                TextEVR.Content = "Сервис не доступен";
+
+
+            }
+
+
+
             ipDispatcher = "";
+
             rssChanels = this.LoadChannelsFromFile("RssChannels.bin");
             Logger.Write("загружены из файла rss каналы");
             this.UpdateChannels();
@@ -62,7 +80,7 @@ namespace SNews
             
             Logger.Write(String.Format("принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
             this.ipDispatcher = endPoint.Address.ToString();
-            broadCast.Pause();
+            broadCast.Stop();
         }
             
         // show rss items in Listview
@@ -132,6 +150,44 @@ namespace SNews
             }
             string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
             HtmlParser hp = new HtmlParser(url);
+        }
+
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            // ... Create a new BitmapImage.
+            BitmapImage b = new BitmapImage();
+            b.BeginInit();
+            b.UriSource = new Uri(@"C:\Git\Chat\SukhovNews\SNews\images\Us.jpg");
+            b.EndInit();
+
+            imageUS.Source = b;
+
+            BitmapImage c = new BitmapImage();
+            c.BeginInit();
+            c.UriSource = new Uri(@"C:\Git\Chat\SukhovNews\SNews\images\ev.jpg");
+            c.EndInit();
+
+            imageEVR.Source = c;
+
+        }
+
+        private void CBSersicView_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            TextUS.Content = "Загрузка...";
+            TextEVR.Content = "Загрузка...";
+            try
+            {
+                System.Data.DataSet Curs = CBServis.GetCursOnDate(System.DateTime.Now);
+                TextUS.Content = Curs.Tables[0].Rows[9].ItemArray[2].ToString();
+                TextEVR.Content = Curs.Tables[0].Rows[10].ItemArray[2].ToString();
+            }
+            catch (Exception)
+            {
+                TextUS.Content = "Сервис не доступен";
+                TextEVR.Content = "Сервис не доступен";
+             
+            }
+            
         }
 
 

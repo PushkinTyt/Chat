@@ -12,10 +12,9 @@ namespace ReferatorServer
         static void Main(string[] args)
         {
             RefServer server = new RefServer();
-<<<<<<< HEAD
-=======
+
             //server.Register();
->>>>>>> refs/remotes/origin/LIVBranch
+
             Console.ReadKey();
         }
     }
