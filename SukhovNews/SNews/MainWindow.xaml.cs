@@ -1,0 +1,166 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+using Rss;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using CommunicationTools;
+using System.Net;
+
+
+namespace SNews
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private List<RssChannel> rssChanels;
+        private UDPClient broadCast;
+        private string ipDispatcher;
+        //private ObservableCollection<RssItem> listViewCollection;
+        public MainWindow()
+        {
+            InitializeComponent();
+            
+            ipDispatcher = "";
+            rssChanels = this.LoadChannelsFromFile("RssChannels.bin");
+            Logger.Write("загружены из файла rss каналы");
+            this.UpdateChannels();
+            //listViewCollection = new ObservableCollection<RssItem>(rssChanels[0].Articles);
+            lvArticles.ItemsSource = rssChanels[0].Articles;
+
+
+            // аля неудачная попытка сделать красивый интерфейс
+            // create buttons for articles categories
+            //for (int i = 0; i < rssChanels.Count; i++)
+            //{
+            //    var btnCateg = new Button() { Name = "btnCat" + i, Content = rssChanels[i].Category };
+            //    btnCateg.Click += RssCateg_Click;
+            //    btnCateg.Uid = i.ToString();
+            //    btnCateg.Style = this.FindResource("channelBtn") as Style;
+            //    CategoryWrap.Children.Add(btnCateg);
+            //}
+
+            foreach (RssChannel channel in rssChanels)
+            {
+                cmbCategoryList.Items.Add(channel.Category);
+            }
+            cmbCategoryList.SelectedIndex = 0;
+            broadCast = new UDPClient();
+            broadCast.onMessage += this.UDP_Receive;
+            broadCast.Start();
+            Logger.Write("запущен поток на прослушку UDP");
+        }
+
+        /// <summary>
+        /// срабатывает когда получен udp пакет от диспетчера
+        /// </summary>
+        private void UDP_Receive(IPEndPoint endPoint, string message)
+        {
+            
+            Logger.Write(String.Format("принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
+            this.ipDispatcher = endPoint.Address.ToString();
+            broadCast.Pause();
+        }
+            
+        // show rss items in Listview
+        private void RssCateg_Click( object sender, EventArgs e)
+        {
+            var locSender = (Button)sender;
+            int id = Int32.Parse(locSender.Uid);
+            lvArticles.ItemsSource = rssChanels[id].Articles;
+
+        }
+
+        /// <summary>
+        /// Обновление списка каналов в ListView
+        /// </summary>
+        private void UpdateChannels_Click(object sender, EventArgs e)
+        {
+            this.UpdateChannels();
+        }
+
+        /// <summary>
+        /// загрузка списка каналов из файла (сериализованный бинарник)
+        /// </summary>
+        /// <param name="путь к файлу"></param>
+        /// <returns>коллекция List RssChannel</returns>
+        private List<RssChannel> LoadChannelsFromFile(string fName)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            List<RssChannel> rss;
+            using (FileStream fs = new FileStream(fName, FileMode.Open))
+            {
+                rss = (List<RssChannel>)bf.Deserialize(fs);
+            }
+
+            return rss;
+        }
+
+
+        /// <summary>
+        /// Обновление списка каналов
+        /// </summary>
+        private void UpdateChannels()
+        {
+            try
+            {
+                foreach (RssChannel channel in rssChanels)
+                {
+                    channel.Update();
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        private void cmbCategoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            lvArticles.ItemsSource = rssChanels[cmbCategoryList.SelectedIndex].Articles;
+        }
+
+        private void fullTextArticle_Click(object sender, EventArgs e)
+        {
+            if (lvArticles.SelectedIndex < 0)
+            {
+                MessageBox.Show("выберите статью");
+                return;
+            }
+            string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
+            HtmlParser hp = new HtmlParser(url);
+        }
+
+
+        // GABARGE:
+        //foreach (RssChannel rssChannel in rssChanels)
+        //{
+        //    Debug.Print(String.Format("категория: {0} url: {1}", rssChannel.Category, rssChannel.Url));
+        //}
+
+        //using (StreamReader sr = new StreamReader("rss.txt"))
+        //{
+        //    while (!sr.EndOfStream)
+        //    {
+        //        string curLine = sr.ReadLine();
+        //        //Regex re = new Regex("(.*),(.*)");
+
+        //        Match match = Regex.Matches(curLine, "(.*),(.*)")[0];
+        //        rssChanels.Add(new RssChannel(match.Groups[2].Value, match.Groups[1].Value));
+        //    }
+        //}
+        //foreach (RssChannel rssChannel in rssChanels)
+        //{
+        //    Debug.Print(String.Format("категория: {0} url: {1}", rssChannel.Category, rssChannel.Url));
+        //}
+
+        //BinaryFormatter sf = new BinaryFormatter();
+        //using (FileStream fs = new FileStream("RssChannels.bin", FileMode.Create))
+        //{
+        //    sf.Serialize(fs, rssChanels);
+        //}
+    }
+}
