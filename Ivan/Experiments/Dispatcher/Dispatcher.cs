@@ -13,6 +13,9 @@ namespace Dispatcher
     {
         HashSet<RefServer> servers = new HashSet<RefServer>();
         string cacheServer = "";
+        int priority = 0;
+
+        TCPListener tcpListener;
 
         public Dispatcher()
         {
@@ -20,10 +23,10 @@ namespace Dispatcher
             Console.WriteLine("****** Диспетчер запущен ******");
 
             int tcpport = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
-            TCPListener listener = new TCPListener(tcpport);
-            listener.onMessage += handleRequest;
-            listener.StartListen();
-            Console.WriteLine("TCP слушает по адресу " + listener.Adress);
+            tcpListener = new TCPListener(tcpport);
+            tcpListener.onMessage += handleRequest;
+            tcpListener.StartListen();
+            Console.WriteLine("TCP слушает по адресу " + tcpListener.Adress);
 
             UDPBroadcaster UDPBroadcasterObj = new UDPBroadcaster(8555, "239.254.255.255");
             UDPBroadcasterObj.Start();
@@ -49,6 +52,7 @@ namespace Dispatcher
 
         void register(IPEndPoint endpoint, MetaData.Roles role)
         {
+
             if (role == MetaData.Roles.cache)
             {
                 cacheServer = endpoint.Address.ToString();
@@ -66,6 +70,11 @@ namespace Dispatcher
                     rs.SendCacheIP(cacheServer);
                 }
             }
+       
+            string priorityString = priority.ToString();
+            MetaData registerResponceMD = new MetaData(MetaData.Roles.dispatcher, MetaData.Actions.register, MetaData.ContentTypes.plainText, priorityString);
+            tcpListener.Send(endpoint, priorityString, registerResponceMD);
+            priority++;
         }
 
         void pickServerForClient(IPEndPoint client)

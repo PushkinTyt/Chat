@@ -23,7 +23,7 @@ namespace CommunicationTools
         Thread acceptThread;
         List<Thread> threads = new List<Thread>();
 
-        Dictionary<EndPoint, TcpClient> clients = new Dictionary<EndPoint, TcpClient>();
+        Dictionary<IPEndPoint, TcpClient> clients = new Dictionary<IPEndPoint, TcpClient>();
 
         /// <summary>
         /// IP-адрес машины, на которой работает этот сокет
@@ -93,7 +93,7 @@ namespace CommunicationTools
                     if (listener.Pending())
                     {
                         TcpClient client = listener.AcceptTcpClient();
-                        clients.Add(client.Client.RemoteEndPoint, client);
+                        clients.Add((IPEndPoint)client.Client.RemoteEndPoint, client);
                         Thread clientHandler = new Thread(() => listenClient(client));
                         clientHandler.Start();
 
@@ -105,6 +105,7 @@ namespace CommunicationTools
                     Debug.WriteLine(ex);
                     break;
                 }
+                Thread.Sleep(300);
             }
         }
 
@@ -150,7 +151,7 @@ namespace CommunicationTools
                 catch (SocketException ex)
                 {
                     Debug.Print(ex.Message);
-                    clients.Remove(client.Client.RemoteEndPoint);
+                    clients.Remove((IPEndPoint)client.Client.RemoteEndPoint);
                     client.Client.Shutdown(SocketShutdown.Both);
                     client.Close();
                     threads.Remove(Thread.CurrentThread);

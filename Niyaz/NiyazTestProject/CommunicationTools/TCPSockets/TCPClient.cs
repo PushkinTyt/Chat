@@ -89,7 +89,10 @@ namespace CommunicationTools
             }
             catch
             {
-                onDisconnect();
+                if(onDisconnect != null)
+                {
+                    onDisconnect();
+                }
                 return;
             }
         }
@@ -139,6 +142,7 @@ namespace CommunicationTools
                             msg += md.Encoding.GetString(msgBytes);
                         }
 
+                        msg = msg.TrimEnd('\0');
                         onMessage(md, msg);
                     }
                     Thread.Sleep(500);

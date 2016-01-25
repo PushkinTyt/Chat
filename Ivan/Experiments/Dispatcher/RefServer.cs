@@ -17,10 +17,10 @@ namespace Dispatcher
 
         public RefServer(IPEndPoint endPoint)
         {
-            endPoint.Port = Convert.ToInt32(ConfigurationManager.AppSettings["refServerPort"].ToString());
-            this.endPoint = endPoint;
+            int port = Convert.ToInt32(ConfigurationManager.AppSettings["refServerPort"].ToString());
+            this.endPoint = new IPEndPoint(endPoint.Address, port);
 
-            client = new TCPClient(endPoint.Address.ToString(), endPoint.Port);
+            client = new TCPClient(this.endPoint.Address.ToString(), this.endPoint.Port);
         }
 
         public IPEndPoint EndPoint
@@ -42,7 +42,6 @@ namespace Dispatcher
             {
                 Console.WriteLine("Не удалось отправить IP кэш-сервера серверу реферирования по адресу " + IP);
             }
-
         }
 
         bool IEquatable<RefServer>.Equals(RefServer other)

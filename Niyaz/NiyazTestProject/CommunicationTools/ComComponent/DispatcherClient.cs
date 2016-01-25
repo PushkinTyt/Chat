@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Configuration;
+using System.Threading;
+using System.Diagnostics;
 
 namespace CommunicationTools.ComComponent
 {
@@ -13,11 +15,14 @@ namespace CommunicationTools.ComComponent
     {
         IPEndPoint dispEndPoint = null;
 
+        int priority = 999;
+        int waitCoef = 1000;
+
         MetaData.Roles role;
         TCPClient tcpClient;
         UDPClient udpClient = new UDPClient();
 
-        bool connected = false;
+        bool connected;
 
         public DispatcherClient(MetaData.Roles role)
         {
@@ -36,19 +41,50 @@ namespace CommunicationTools.ComComponent
             dispEndPoint = endPoint;
             Console.WriteLine(String.Format("Найден диспетчер по адресу {0}. Сообщение от диспетчера: {1}", endPoint.Address.ToString(), message));
 
-            int port = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
-            tcpClient = new TCPClient(endPoint.Address.ToString(), port);
-            tcpClient.onDisconnect += TcpClient_onDisconnect;
-            tcpClient.StartListen();
+            try
+            {
+                int port = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
+                tcpClient = new TCPClient(endPoint.Address.ToString(), port);
+                tcpClient.onMessage += TcpClient_onMessage;
+                tcpClient.onDisconnect += TcpClient_onDisconnect;
+                tcpClient.StartListen();
 
-            onFound();
-            udpClient.Pause();
+                onFound();
+                udpClient.Stop();
+                connected = true;
+            }
+            catch(SocketException ex)
+            {
+                Console.WriteLine("Не удалось присоединиться к диспетчеру по адресу " + endPoint.Address.ToString());
+            }
+        }
+
+        private void TcpClient_onMessage(MetaData md, string msg)
+        {
+            switch(md.Action)
+            {
+                case MetaData.Actions.register:
+                    priority = Int32.Parse(msg);
+                    Console.WriteLine("Получен порядковый номер " + msg);
+                    break;
+            }
         }
 
         private void TcpClient_onDisconnect()
         {
-            Console.WriteLine("Прервано соединение с диспетчером.");
             connected = false;
+
+            Console.WriteLine("Прервано соединение с диспетчером...");
+            udpClient.Start();
+            Thread.Sleep(priority * waitCoef + 6000);
+            if (!connected)
+            {
+                string dispPath = ConfigurationManager.AppSettings["dispatcherPath"].ToString();
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.FileName = dispPath;
+                Process dispProcess = Process.Start(startInfo);
+                Console.WriteLine("Запущен диспетчер на этой машине.");
+            }
         }
 
         public delegate void dispFound();

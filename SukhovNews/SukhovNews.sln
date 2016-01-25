@@ -6,10 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationTools", "..\Niyaz\NiyazTestProject\CommunicationTools\CommunicationTools.csproj", "{38EEB1D7-EF98-440E-B782-7DF1F12510CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dispatcher", "..\Ivan\Experiments\Dispatcher\Dispatcher.csproj", "{4B893470-6DB8-4B2C-98B2-D85B9D66C117}"
-	ProjectSection(ProjectDependencies) = postProject
-		{194C7725-41BF-4C52-A6D9-252C4ADD9695} = {194C7725-41BF-4C52-A6D9-252C4ADD9695}
-		{F3E2BAFF-ADAB-44A8-A00F-32050BF9681D} = {F3E2BAFF-ADAB-44A8-A00F-32050BF9681D}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferatorServer", "ReferatorServer\ReferatorServer.csproj", "{194C7725-41BF-4C52-A6D9-252C4ADD9695}"
 EndProject
