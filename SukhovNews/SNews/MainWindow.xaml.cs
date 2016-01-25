@@ -62,7 +62,7 @@ namespace SNews
             
             Logger.Write(String.Format("принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
             this.ipDispatcher = endPoint.Address.ToString();
-            broadCast.Pause();
+            broadCast.Stop();
         }
             
         // show rss items in Listview
