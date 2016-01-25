@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using CommunicationTools;
 using System.Net;
 using System.Windows.Media.Imaging;
+using System.Drawing.Imaging;
 
 namespace SNews
 {
@@ -23,7 +24,10 @@ namespace SNews
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
+            
+            string fullPath = AppDomain.CurrentDomain.BaseDirectory;
             InitializeComponent();
+            
             CBServis = new CB.DailyInfoSoapClient();
             try
             {
@@ -155,19 +159,30 @@ namespace SNews
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             // ... Create a new BitmapImage.
-            BitmapImage b = new BitmapImage();
-            b.BeginInit();
-            b.UriSource = new Uri(@"C:\Git\Chat\SukhovNews\SNews\images\Us.jpg");
-            b.EndInit();
-
-            imageUS.Source = b;
-
-            BitmapImage c = new BitmapImage();
-            c.BeginInit();
-            c.UriSource = new Uri(@"C:\Git\Chat\SukhovNews\SNews\images\ev.jpg");
-            c.EndInit();
-
-            imageEVR.Source = c;
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.Us.Save(memory, ImageFormat.Jpeg);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                imageUS.Source = bitmapImage;
+            }
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.ev.Save(memory, ImageFormat.Jpeg);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                imageEVR.Source = bitmapImage;
+            }
+            
+            
 
         }
 
