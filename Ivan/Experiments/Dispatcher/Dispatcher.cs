@@ -20,16 +20,26 @@ namespace Dispatcher
         public Dispatcher()
         {
             Console.Title = "Dispatcher";
-            Console.WriteLine("****** Диспетчер запущен ******");
 
-            int tcpport = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
-            tcpListener = new TCPListener(tcpport);
-            tcpListener.onMessage += handleRequest;
-            tcpListener.StartListen();
-            Console.WriteLine("TCP слушает по адресу " + tcpListener.Adress);
+            UDPClient udpClient = new UDPClient();
+            
+            if (udpClient.IsBroadcasterExists())
+            {
+                Console.WriteLine("****** Диспетчер уже присутствует в сети. ******");
+            }
+            else
+            {
+                Console.WriteLine("****** Диспетчер запущен ******");
 
-            UDPBroadcaster UDPBroadcasterObj = new UDPBroadcaster(8555, "239.254.255.255");
-            UDPBroadcasterObj.Start();
+                int tcpport = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
+                tcpListener = new TCPListener(tcpport);
+                tcpListener.onMessage += handleRequest;
+                tcpListener.StartListen();
+                Console.WriteLine("TCP слушает по адресу " + tcpListener.Adress);
+
+                UDPBroadcaster UDPBroadcasterObj = new UDPBroadcaster(8555, "239.254.255.255");
+                UDPBroadcasterObj.Start();
+            }
         }
 
         void handleRequest(IPEndPoint endpoint, MetaData md, string msg)
@@ -81,7 +91,6 @@ namespace Dispatcher
         {
             //Балансировка
         }
-
-
+ 
     }
 }
