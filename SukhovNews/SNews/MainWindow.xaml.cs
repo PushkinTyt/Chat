@@ -237,11 +237,12 @@ namespace SNews
                 return;
             }
 
-            string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
-            Thread newWindowThread = new Thread(() => showRefView(url));
-            newWindowThread.SetApartmentState(ApartmentState.STA);
-            newWindowThread.IsBackground = true;
-            newWindowThread.Start();
+            //string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
+            //Thread newWindowThread = new Thread(() => showRefView(url));
+            //newWindowThread.SetApartmentState(ApartmentState.STA);
+            //newWindowThread.IsBackground = true;
+            //newWindowThread.Start();
+            tempCode();
         }
 
         private void showRefView(string url)
@@ -257,7 +258,52 @@ namespace SNews
             winRef.Show();
         }
 
+        
+        private void tempCode()
+        {
+            //todo: пока что % сжатия = 50 всегда. переделать в новом окне.
+            byte compressPercent = 50;
 
+            int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
+            try
+            {
+                if (dispComponent == null)
+                {
+                    dispComponent = new TCPClient(ipDispatcher, port);
+
+                    MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
+                    dispComponent.Send("", md);
+                    this.IsEnabled = false;
+                    string ipRefServer = dispComponent.ReceiveSyncData(0);
+                    this.IsEnabled = true;
+                    int portRefServ = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"]);
+                    TCPClient refSever = new TCPClient(ipRefServer, portRefServ);
+                    string url = rssChanels[cmbCategoryList.SelectedIndex]
+                        .Articles[lvArticles.SelectedIndex].link;
+
+                    string message = url + "|" + compressPercent;
+
+                    md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
+                    refSever.Send(message, md);
+                    string response = refSever.ReceiveSyncData(0);
+                    MessageBox.Show(response);
+                }
+                else
+                {
+                    MessageBox.Show("погодите, увы занято!");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                dispComponent = null;
+            }
+        }
 
 
         // GABARGE:

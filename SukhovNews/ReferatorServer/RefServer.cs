@@ -91,7 +91,7 @@ namespace ReferatorServer
                                 string articleXml = referator.getXml();
                                 //todo: отправляем кэш серверу articleXml
 
-                                cacheMSMQ.Send(articleXml,url);
+                                //cacheMSMQ.Send(articleXml,url);
                             }
                             catch (Exception ex)
                             {
