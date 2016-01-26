@@ -233,7 +233,7 @@ namespace SNews
                 return;
             }
             string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
-            ReferateView page = new ReferateView();
+            ReferateView page = new ReferateView(url);
             page.Show();
             
         }

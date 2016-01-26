@@ -7,6 +7,9 @@
         mc:Ignorable="d"
         Title="ReferateView" Height="300" Width="300">
     <Grid>
-        
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="206" Margin="10,53,0,0" TextWrapping="Wrap" Text="Выхлоп рефератора" VerticalAlignment="Top" Width="272"/>
+        <Slider x:Name="slider" HorizontalAlignment="Left" Height="25" Margin="10,23,0,0" VerticalAlignment="Top" Width="272"/>
+        <Label x:Name="label" Content="Степень сжатия" HorizontalAlignment="Left" Margin="50,0,0,0" VerticalAlignment="Top" Width="122" Height="23"/>
+
     </Grid>
 </Window>

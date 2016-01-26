@@ -19,8 +19,10 @@ namespace SNews
     /// </summary>
     public partial class ReferateView : Window
     {
-        public ReferateView()
+        private string URL;
+        public ReferateView(string URL)
         {
+            this.URL = URL;
             InitializeComponent();
         }
     }
