@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CommunicationTools.MetaData">
+    <Position X="5.5" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="CommunicationTools.MetaData.Roles">
+        <TypeIdentifier>
+          <NewMemberFileName>MetaData.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="CommunicationTools.MetaData.Actions">
+        <TypeIdentifier>
+          <NewMemberFileName>MetaData.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="CommunicationTools.MetaData.ContentTypes">
+        <TypeIdentifier>
+          <NewMemberFileName>MetaData.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAIAAEACAABAAgAAAAJAAAAAAAACAAAQ=</HashCode>
+      <FileName>MetaData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommunicationTools.MSMQClient">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MSMQClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommunicationTools.MSMQListener">
+    <Position X="3.5" Y="2.5" Width="1.5" />
+    <NestedTypes>
+      <Delegate Name="CommunicationTools.MSMQListener.ReceiveMethod">
+        <TypeIdentifier>
+          <NewMemberFileName>MSMQListener.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AQIAAAAAAEAAAAAAAAAAAAAAECAAAAAAIAAAAACAgAA=</HashCode>
+      <FileName>MSMQListener.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommunicationTools.ServicClient">
+    <Position X="7.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ServicClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommunicationTools.ServicServer">
+    <Position X="7.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ServicServer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommunicationTools.UDPBroadcaster">
+    <Position X="9.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgJAAAACAgAAAAAAAAAAAAASAAAACAAAAAAAAAAAg=</HashCode>
+      <FileName>UDPBroadcaster.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommunicationTools.UDPClient">
+    <Position X="11.5" Y="0.5" Width="1.5" />
+    <NestedTypes>
+      <Delegate Name="CommunicationTools.UDPClient.receiveBroadcastMessage" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>UDPClient.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAgIAAAACAAAAEAAAABAAAAACAAAACAAAAAAAAAgAg=</HashCode>
+      <FileName>UDPClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -25,6 +25,8 @@ namespace SNews
             //    Shutdown();
             //}
             
+
+            
         }
 
         private void Application_DispatcherUnhandledException(object sender,

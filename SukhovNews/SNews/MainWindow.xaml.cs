@@ -7,8 +7,9 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using CommunicationTools;
 using System.Net;
+using System.Windows.Media.Imaging;
+using System.Drawing.Imaging;
 using System.Configuration;
-
 
 namespace SNews
 {
@@ -20,13 +21,34 @@ namespace SNews
         private List<RssChannel> rssChanels;
         private UDPClient broadCast;
         private string ipDispatcher;
+        private CB.DailyInfoSoapClient CBServis;
         private TCPClient dispComponent;  
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
+            
+            string fullPath = AppDomain.CurrentDomain.BaseDirectory;
             InitializeComponent();
             
+            CBServis = new CB.DailyInfoSoapClient();
+            try
+            {
+                System.Data.DataSet Curs = CBServis.GetCursOnDate(System.DateTime.Now);
+                TextUS.Content = Curs.Tables[0].Rows[9].ItemArray[2].ToString();
+                TextEVR.Content = Curs.Tables[0].Rows[10].ItemArray[2].ToString();
+            }
+            catch (Exception )
+            {
+                TextUS.Content = "Сервис не доступен";
+                TextEVR.Content = "Сервис не доступен";
+
+
+            }
+
+
+
             ipDispatcher = "";
+
             rssChanels = this.LoadChannelsFromFile("RssChannels.bin");
             Logger.Write("загружены из файла rss каналы");
             this.UpdateChannels();
@@ -66,7 +88,7 @@ namespace SNews
             this.ipDispatcher = endPoint.Address.ToString();
             
             broadCast.Stop(); // пауза для udp listener'a
-    }
+        }
             
         // show rss items in Listview
         private void RssCateg_Click( object sender, EventArgs e)
@@ -136,7 +158,56 @@ namespace SNews
             string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
             HtmlParser hp = new HtmlParser(url);
         }
-       
+
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            // ... Create a new BitmapImage.
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.Us.Save(memory, ImageFormat.Jpeg);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                imageUS.Source = bitmapImage;
+            }
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.ev.Save(memory, ImageFormat.Jpeg);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                imageEVR.Source = bitmapImage;
+            }
+            
+            
+
+        }
+
+        private void CBSersicView_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            TextUS.Content = "Загрузка...";
+            TextEVR.Content = "Загрузка...";
+            try
+            {
+                System.Data.DataSet Curs = CBServis.GetCursOnDate(System.DateTime.Now);
+                TextUS.Content = Curs.Tables[0].Rows[9].ItemArray[2].ToString();
+                TextEVR.Content = Curs.Tables[0].Rows[10].ItemArray[2].ToString();
+            }
+            catch (Exception)
+            {
+                TextUS.Content = "Сервис не доступен";
+                TextEVR.Content = "Сервис не доступен";
+             
+            }
+            
+        }
+
         private void btnReferate_Click(object sender, RoutedEventArgs e)
         {
             //todo: пока что % сжатия = 50 всегда. переделать в новом окне.
