@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using CommunicationTools;
 using System.Net;
+using System.Configuration;
 
 
 namespace SNews
@@ -19,6 +20,7 @@ namespace SNews
         private List<RssChannel> rssChanels;
         private UDPClient broadCast;
         private string ipDispatcher;
+        private TCPClient dispComponent;  
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
@@ -62,8 +64,9 @@ namespace SNews
             
             Logger.Write(String.Format("принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
             this.ipDispatcher = endPoint.Address.ToString();
-            broadCast.Stop();
-        }
+            
+            broadCast.Stop(); // пауза для udp listener'a
+    }
             
         // show rss items in Listview
         private void RssCateg_Click( object sender, EventArgs e)
@@ -133,8 +136,52 @@ namespace SNews
             string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
             HtmlParser hp = new HtmlParser(url);
         }
+       
+        private void btnReferate_Click(object sender, RoutedEventArgs e)
+        {
+            //todo: пока что % сжатия = 50 всегда. переделать в новом окне.
+            byte compressPercent = 50;
+
+            int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
+            try
+            {
+                if (dispComponent == null)
+                {
+                    dispComponent = new TCPClient(ipDispatcher, port);
+
+                    MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
+                    dispComponent.Send("", md);
+                    this.IsEnabled = false;
+                    string ipRefServer = dispComponent.ReceiveSyncData(2000);
+                    this.IsEnabled = true;
+                    int portRefServ = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"]);
+                    TCPClient refSever = new TCPClient(ipRefServer, portRefServ);
+                    string url = rssChanels[cmbCategoryList.SelectedIndex]
+                        .Articles[lvArticles.SelectedIndex].link;
+
+                    string message = url + "|" + compressPercent;
+
+                    md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
+                    refSever.Send(message, md);
+                    string response = refSever.ReceiveSyncData(0);
+                    MessageBox.Show(response);
+                }
+                else
+                {
+                    MessageBox.Show("погодите, увы занято!");
+                }
 
 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                dispComponent = null;
+            }
+        }
         // GABARGE:
         //foreach (RssChannel rssChannel in rssChanels)
         //{

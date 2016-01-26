@@ -11,7 +11,35 @@ namespace Dispatcher
 {
     class Dispatcher
     {
-        HashSet<RefServer> servers = new HashSet<RefServer>();
+        List<RefServer> servers = new List<RefServer>();
+        private int nextServIndex;
+
+        public int NextServIndex
+        {
+            get
+            {
+                if (servers.Count == 0) // если серверов нет
+                {
+                    nextServIndex = -1;
+                }
+                else if (nextServIndex >= servers.Count) // сбрасываем счетчик round balance
+                {
+                    nextServIndex = 0;
+                }
+                else if(servers.Count > 0 && nextServIndex == -1) // если сервера появились, а индекс ещё указывает обратное
+                {
+                    nextServIndex = 0;
+                }
+
+                return nextServIndex++;
+            }
+            set
+            {
+                nextServIndex = value;
+            }
+        }
+
+
         string cacheServer = "";
         int priority = 0;
 
@@ -79,7 +107,16 @@ namespace Dispatcher
 
         void pickServerForClient(IPEndPoint client)
         {
-            //Балансировка
+            if (NextServIndex == -1)
+            {
+                // todo: написать как будет себя вести диспетчер, если после запроса клиента на реферирование оказалось, что серверов нет
+                throw new NotImplementedException();
+            }
+            string refServIP = servers[NextServIndex].EndPoint.Address.ToString();
+
+            MetaData md = new MetaData(MetaData.Roles.server, MetaData.Actions.none, MetaData.ContentTypes.link, refServIP);
+
+            tcpListener.Send(client, refServIP, md);
         }
 
 

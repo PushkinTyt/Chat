@@ -57,7 +57,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" HorizontalAlignment="Left"  VerticalAlignment="Top"  Background="#B2FFFFFF">
             <Button x:Name="btnExpand" Content="Update" Template="{StaticResource btn_article}"  HorizontalAlignment="Stretch" Click="UpdateChannels_Click"/>
-            <Button x:Name="btnReferate" Content="Referate" Template="{StaticResource btn_article}" />
+            <Button x:Name="btnReferate" Content="Referate" Template="{StaticResource btn_article}" Click="btnReferate_Click" />
             <Button x:Name="btnLoadFullArticle" Content="Посмотреть" Template="{StaticResource btn_article}"  Click="fullTextArticle_Click"/>
         </StackPanel>
 

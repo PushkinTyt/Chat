@@ -157,6 +157,28 @@ namespace CommunicationTools
             }
         }
 
+        public string ReceiveSyncData(int timeOut)
+        {
+            NetworkStream networkStream = client.GetStream();
+            client.ReceiveTimeout = timeOut;
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            MetaData md = (MetaData)formatter.Deserialize(networkStream);
+
+            string msg = "";
+            int bufSize = 512;
+            byte[] msgBytes = new byte[bufSize];
+
+            if (md.MessageSize > 0)
+            {
+                networkStream.Read(msgBytes, 0, md.MessageSize);
+                msg += md.Encoding.GetString(msgBytes);
+            }
+
+            msg = msg.TrimEnd('\0');
+            client.ReceiveTimeout = 0;
+            return msg;
+        }
         /// <summary>
         /// Разрывает подключение с сервером
         /// </summary>

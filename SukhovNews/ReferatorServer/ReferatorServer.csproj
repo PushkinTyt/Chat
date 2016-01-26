@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsQuery, Version=1.3.3.249, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsQuery.1.3.4\lib\net40\CsQuery.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -46,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheService.cs" />
+    <Compile Include="HtmlParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RefServer.cs" />
@@ -55,11 +60,16 @@
       <Project>{38eeb1d7-ef98-440e-b782-7df1f12510cb}</Project>
       <Name>CommunicationTools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Referation\Referation.csproj">
+      <Project>{0f8d62f0-ffd7-432c-96dc-a1934a1fdf36}</Project>
+      <Name>Referation</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\App.config">
       <Link>App.config</Link>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
