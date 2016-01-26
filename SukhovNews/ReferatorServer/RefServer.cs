@@ -133,5 +133,10 @@ namespace ReferatorServer
             Console.WriteLine("Попытка зарегистрироваться на диспетчере");
             dc.Register();
         }
+
+        ~RefServer()
+        {
+            tcpListener.Close();
+        }
     }
 }
