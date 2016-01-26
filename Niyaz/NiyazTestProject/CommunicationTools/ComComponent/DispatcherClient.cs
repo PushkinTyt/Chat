@@ -35,7 +35,7 @@ namespace CommunicationTools.ComComponent
             if(udpClient != null)
                 udpClient.onMessage += receiveBroadcastMessage;
             udpClient.Start();
-            Thread.Sleep(UDPClient.BroadcastInterval + 500); //Слушаем broadcaster'a на 500 миллисекунд больше
+            Thread.Sleep(UDPClient.BroadcastInterval * 2);
             if(!connected)
             {
                 startDispatcher();
@@ -44,6 +44,8 @@ namespace CommunicationTools.ComComponent
 
         void receiveBroadcastMessage(IPEndPoint endPoint, string message)
         {
+            connected = true;
+
             dispEndPoint = endPoint;
             Console.WriteLine(String.Format("Найден диспетчер по адресу {0}. Сообщение от диспетчера: {1}", endPoint.Address.ToString(), message));
 
@@ -57,7 +59,6 @@ namespace CommunicationTools.ComComponent
 
                 onFound();
                 udpClient.Stop();
-                connected = true;
             }
             catch(SocketException ex)
             {

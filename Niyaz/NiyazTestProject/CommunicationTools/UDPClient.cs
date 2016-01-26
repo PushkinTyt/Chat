@@ -93,6 +93,7 @@ namespace CommunicationTools
                     Thread.Sleep(300);
                 }
             }
+
             catch (ThreadAbortException)
             {
                 udpReciver.Close();
@@ -104,7 +105,7 @@ namespace CommunicationTools
         public bool IsBroadcasterExists()
         {
             UdpClient udpReciver = new UdpClient();
-            udpReciver.Client.ReceiveTimeout = BroadcastInterval + 500;
+            udpReciver.Client.ReceiveTimeout = BroadcastInterval * 2;
 
             udpReciver.ExclusiveAddressUse = false;
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);

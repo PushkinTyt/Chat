@@ -57,8 +57,15 @@ namespace ReferatorServer
                         // hack: здесь нужно дописать запрос на кэшированную версию
                         // пока что всегда реферируем без проверки на кэш
                         bool hasCache = false;
-                        bool passed;
-                        cs.cacheFileExists(url, out hasCache, out passed);
+                        bool passed=false;
+                        try
+                        {
+                            cs.cacheFileExists(url, out hasCache, out passed);
+                        }
+                        catch
+                        {
+                            hasCache = false;
+                        }
 
                         
 
@@ -70,7 +77,10 @@ namespace ReferatorServer
                         }
                         else
                         {
+                            if (passed)
+                            { 
                             cs.notifyReferation(url);
+                            }
 
                             try
                             {
@@ -86,6 +96,8 @@ namespace ReferatorServer
                             catch (Exception ex)
                             {
                                 //todo: обработать ошибку если не удалось скачать статью
+                                Console.WriteLine("Ошибка в обращении к сайту или реферирования");
+
                             }
                         }
 

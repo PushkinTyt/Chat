@@ -28,6 +28,15 @@ namespace Referat
             _items.Add(new Sentence(text, parent, index));
         }
 
+        /// <summary>
+        /// добавление предложения как объекта sentence
+        /// </summary>
+        /// <param name="sentence">sentence</param>
+        public void Add(Sentence sentence)
+        {
+            _items.Add(sentence);
+        }
+
         // сортировка предложений
         public void Sort(Comparison<Sentence> comparison)
         {
