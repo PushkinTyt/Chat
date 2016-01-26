@@ -41,6 +41,11 @@ namespace Dispatcher
             }
         }
 
+        internal void UpdateServerList(RefServer refServer)
+        {
+            servers.Remove(refServer);
+            ShowServers();
+        }
 
         string cacheServer = "";
         int priority = 0;
@@ -59,7 +64,7 @@ namespace Dispatcher
             }
             else
             {
-                Console.WriteLine("****** Диспетчер запущен ******");
+                //Console.WriteLine("****** Диспетчер запущен ******");
 
                 int tcpport = Convert.ToInt32(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
                 tcpListener = new TCPListener(tcpport);
@@ -69,6 +74,7 @@ namespace Dispatcher
 
                 UDPBroadcasterObj = new UDPBroadcaster(8555, "239.254.255.255");
                 UDPBroadcasterObj.Start();
+                ShowServers();
             }
         }
 
@@ -96,25 +102,26 @@ namespace Dispatcher
             if (role == MetaData.Roles.cache)
             {
                 cacheServer = endpoint.Address.ToString();
-                Console.WriteLine("Зарегистрирован кэш-сервер по адресу " + endpoint.Address.ToString());
+                //Console.WriteLine("Зарегистрирован кэш-сервер по адресу " + endpoint.Address.ToString());
 
                 servers.ToList().ForEach(x => x.SendCacheIP(cacheServer));
+
             }
             else
             {
-                var rs = new RefServer(endpoint);
+                var rs = new RefServer(endpoint, this);
                 servers.Add(rs);
-                Console.WriteLine("Зарегистрирован сервер реферирования по адресу " + endpoint.Address.ToString());
+                //Console.WriteLine("Зарегистрирован сервер реферирования по адресу " + endpoint.Address.ToString());
                 if (cacheServer != String.Empty)
                 {
                     rs.SendCacheIP(cacheServer);
                 }
             }
-       
+            ShowServers();
             string priorityString = priority.ToString();
             MetaData registerResponceMD = new MetaData(MetaData.Roles.dispatcher, MetaData.Actions.register, MetaData.ContentTypes.plainText, priorityString);
             tcpListener.Send(endpoint, priorityString, registerResponceMD);
-            priority++;
+            priority++; //todo: менять приоритет
         }
 
         void pickServerForClient(IPEndPoint client)
@@ -129,6 +136,20 @@ namespace Dispatcher
             MetaData md = new MetaData(MetaData.Roles.server, MetaData.Actions.none, MetaData.ContentTypes.link, refServIP);
 
             tcpListener.Send(client, refServIP, md);
+        }
+
+        private void ShowServers()
+        {
+            Console.Clear();
+            Console.WriteLine("****** Диспетчер запущен ******");
+            Console.WriteLine("подключенные серверы:");
+            for (int i = 0; i < servers.Count; i++)
+            {
+                Console.WriteLine("{0,2}   {1,18}",i, servers[i].EndPoint.ToString());
+                Console.WriteLine();   
+            }
+            Console.WriteLine("Кэш-сервер: {0}", cacheServer);
+
         }
 
         ~Dispatcher()

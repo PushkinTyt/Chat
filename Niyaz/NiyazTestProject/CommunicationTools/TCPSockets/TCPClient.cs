@@ -78,20 +78,23 @@ namespace CommunicationTools
 
         void ping()
         {
+            bool flag = true;
             MetaData pingPackage = new MetaData(MetaData.Roles.none, MetaData.Actions.ping);
             try
             {
-                while (true)
+                while (flag)
                 {
                     this.Send("", pingPackage);
                     Thread.Sleep(300);
                 }
             }
-            catch(ThreadAbortException)
+            catch (ThreadAbortException)
             {
-                return;
+                flag = false;
+                onDisconnect = null;
+                //return;
             }
-            catch(SocketException)
+            catch (Exception)
             {
                 if(onDisconnect != null)
                 {
@@ -103,20 +106,35 @@ namespace CommunicationTools
 
         public void Send(string msg, MetaData md)
         {
-            NetworkStream socketStream = client.GetStream();
+            try
+            {
+                NetworkStream socketStream = client.GetStream();
 
-            MemoryStream ms = new MemoryStream();
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(ms, md);
+                MemoryStream ms = new MemoryStream();
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(ms, md);
 
-            byte[] msgBytes = md.Encoding.GetBytes(msg);
-            ms.Write(msgBytes, 0, msgBytes.Length);
+                byte[] msgBytes = md.Encoding.GetBytes(msg);
+                ms.Write(msgBytes, 0, msgBytes.Length);
 
-            byte[] generalMsg = new byte[ms.Length];
-            ms.Position = 0;
-            ms.Read(generalMsg, 0, (int)ms.Length);
+                byte[] generalMsg = new byte[ms.Length];
+                ms.Position = 0;
+                ms.Read(generalMsg, 0, (int)ms.Length);
+         
+                socketStream.Write(generalMsg, 0, generalMsg.Length);
+            }
+            catch (Exception)
+            {
+                //SocketException se = (SocketException)e.InnerException;
+                //if (se.ErrorCode == 10053 && se.ErrorCode == 10054)
+                //{
+                    if (onDisconnect != null)
+                    {
+                        onDisconnect();
+                    }
+                //}
+            }
 
-            socketStream.Write(generalMsg, 0, generalMsg.Length);
         }
 
         /// <summary>
@@ -130,7 +148,7 @@ namespace CommunicationTools
             {
                 try
                 {
-                    if (client.Available > 0)
+                    if (client.Client.Available > 0)
                     {
                         BinaryFormatter formatter = new BinaryFormatter();
 
@@ -149,6 +167,10 @@ namespace CommunicationTools
                         msg = msg.TrimEnd('\0');
                         onMessage(md, msg);
                     }
+                    else
+                    {
+                        throw new Exception("ура он отключился нормально!");
+                    }
                     Thread.Sleep(500);
                 }
                 catch(Exception ex)
@@ -166,23 +188,34 @@ namespace CommunicationTools
 
         public string ReceiveSyncData(int timeOut)
         {
-            NetworkStream networkStream = client.GetStream();
-            client.ReceiveTimeout = timeOut;
-            BinaryFormatter formatter = new BinaryFormatter();
-
-            MetaData md = (MetaData)formatter.Deserialize(networkStream);
-
             string msg = "";
-
-            if (md.MessageSize > 0)
+            try
             {
-                byte[] msgBytes = new byte[md.MessageSize];
-                networkStream.Read(msgBytes, 0, md.MessageSize);
-                msg += md.Encoding.GetString(msgBytes);
+                NetworkStream networkStream = client.GetStream();
+                client.ReceiveTimeout = timeOut;
+                BinaryFormatter formatter = new BinaryFormatter();
+
+                MetaData md = (MetaData)formatter.Deserialize(networkStream);
+
+                if (md.MessageSize > 0)
+                {
+                    byte[] msgBytes = new byte[md.MessageSize];
+                    networkStream.Read(msgBytes, 0, md.MessageSize);
+                    msg += md.Encoding.GetString(msgBytes);
+                }
+
+                msg = msg.TrimEnd('\0');
+                client.ReceiveTimeout = 0;
+            }
+            catch (Exception)
+            {
+                if (onDisconnect != null)
+                {
+                    onDisconnect();
+                }
             }
 
-            msg = msg.TrimEnd('\0');
-            client.ReceiveTimeout = 0;
+            
             return msg;
         }
         /// <summary>
@@ -190,9 +223,10 @@ namespace CommunicationTools
         /// </summary>
         public void Close()
         {
-            if(client != null)
+            //onDisconnect = null;
+            if (client != null)
             {
-                client.Client.Shutdown(SocketShutdown.Both);
+                //client.Client.Shutdown(SocketShutdown.Both);
                 client.Close();
                 if(messageHandler != null)
                 {
@@ -203,7 +237,9 @@ namespace CommunicationTools
                 {
                     pingThread.Abort();
                 }
+                client = null;
             }
+            
         }
 
         ~TCPClient()
