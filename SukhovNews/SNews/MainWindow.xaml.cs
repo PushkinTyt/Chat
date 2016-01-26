@@ -223,7 +223,7 @@ namespace SNews
                     MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
                     dispComponent.Send("", md);
                     this.IsEnabled = false;
-                    string ipRefServer = dispComponent.ReceiveSyncData(2000);
+                    string ipRefServer = dispComponent.ReceiveSyncData(0);
                     this.IsEnabled = true;
                     int portRefServ = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"]);
                     TCPClient refSever = new TCPClient(ipRefServer, portRefServ);
@@ -253,6 +253,7 @@ namespace SNews
                 dispComponent = null;
             }
         }
+
         // GABARGE:
         //foreach (RssChannel rssChannel in rssChanels)
         //{
