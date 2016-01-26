@@ -29,11 +29,17 @@ namespace Referat
 
             XmlDocument xDoc = new XmlDocument();
             xDoc.LoadXml(xml);
-            XmlNodeList xSentences = xDoc.SelectNodes("se");
-            foreach (XmlNode se in xSentences)
+            XmlNode xSentences = xDoc.SelectSingleNode("sentences");
+            XmlNodeList xSe = xSentences.SelectNodes("se");
+            foreach (XmlNode se in xSe)
             {
-                //int seIndex = int.Parse(se.Attributes.GetNamedItem("Index"));
-                //Sentence sentence = new Sentence();
+                int seIndex = int.Parse(se.Attributes["index"].Value);
+                string s = se.Attributes["weight"].Value;
+                s = s.Replace('.', ',');
+                float seWeight = float.Parse(s);
+                Sentence sentence = new Sentence(se.InnerText,this,seIndex,1);
+                sentence.Weight = seWeight;
+                Sentences.Add(sentence);
             }                        
         }
 

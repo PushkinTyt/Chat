@@ -22,7 +22,10 @@ namespace Referat
         private string _originalText; // исходный текст предложения
         public string originalText { get { return _originalText; } set { _originalText = value; } }
         private float _weight;        // вес предложения
-        public float Weight { get {return _weight;} }
+        public float Weight {
+            get { return _weight; }
+            set { _weight = value; }                
+        }
 
 
         //конструктор
@@ -36,6 +39,10 @@ namespace Referat
             this.parse2WordsFromStr(stemString);
         }
 
+        public Sentence(string origText, Referator parent, int index, int m)
+        {
+
+        }
         // парсинг предложения на слова из простой строки
         private void parse2WordsFromStr(string inpStr)
         {

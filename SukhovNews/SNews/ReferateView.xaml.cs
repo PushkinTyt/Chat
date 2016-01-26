@@ -19,11 +19,14 @@ namespace SNews
     /// </summary>
     public partial class ReferateView : Window
     {
+        private string ipDispatcher;
         private string URL;
         public ReferateView(string URL)
         {
             this.URL = URL;
             InitializeComponent();
         }
+
+
     }
 }
