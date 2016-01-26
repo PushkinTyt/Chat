@@ -60,7 +60,7 @@ namespace CommunicationTools.ComComponent
             }
             catch(SocketException ex)
             {
-                Console.WriteLine("Не удалось присоединиться к диспетчеру по адресу " + endPoint.Address.ToString());
+                Console.WriteLine("Не удалось присоединиться к диспетчеру по адресу " + endPoint.Address.ToString() + "ошибка: " + ex.Message);
             }
         }
 

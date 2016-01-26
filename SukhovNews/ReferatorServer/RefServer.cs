@@ -7,6 +7,9 @@ using CommunicationTools.ComComponent;
 using CommunicationTools;
 using System.Configuration;
 using System.Net;
+using Rss;
+using Referat;
+
 
 namespace ReferatorServer
 {
@@ -42,8 +45,48 @@ namespace ReferatorServer
                         conToCacheServer(msg);
                     }
                     break;
+
+                case MetaData.Roles.client:
+                    if(md.Action == MetaData.Actions.refNews)
+                    {
+                        Referator referator = null;
+                        string fullArticle = "";
+                        string[] refParameters = msg.Split('|');
+                        string url = refParameters[0];
+                        byte compressPerc = byte.Parse(refParameters[1]);
+                        // hack: здесь нужно дописать запрос на кэшированную версию
+                        // пока что всегда реферируем без проверки на кэш
+                        bool hasCache = false;
+                        if (hasCache) // если есть кэш
+                        {
+                            //Referator referator = new Referator(cachedXML); //создаем рефератор из кэшированного xml
+                            
                 default:
                     Console.WriteLine("Не опознанная команда " + md.Action + " от " + md.Role);
+                    break;
+            }
+                        else
+                        {
+                            try
+                            {
+                                // берем статью из интернета
+                                HtmlParser hp = new HtmlParser(url);
+                                fullArticle = hp.Text;
+                                referator = new Referator(fullArticle, "utf-8");
+                                //string articleXml = referator.getXml();
+                                //todo: отправляем кэш серверу articleXml
+        }
+                            catch (Exception ex)
+                            {
+                                //todo: обработать ошибку если не удалось скачать статью
+                            }
+                        }
+
+                        string compressedArticle = referator.Compress(compressPerc);
+
+                        MetaData articleMD = new MetaData(MetaData.Roles.server, MetaData.Actions.refNews, MetaData.ContentTypes.plainText, fullArticle);
+                        tcpListener.Send(endpoint, fullArticle, articleMD);
+                    }
                     break;
             }
         }
@@ -68,12 +111,34 @@ namespace ReferatorServer
             dc.Register();
         }
 
-        void refNews(string URL)
+        /// <summary>
+        /// реферирование статьи по url
+        /// </summary>
+        /// <param name="Text">полный текст статьи</param>
+        /// <returns>строка xml</returns>
+        string refNews(string Text)
         {
-            bool cacheExists;
-            bool passed;
+            //bool cacheExists;
+            //bool passed;
 
-            string rangeSentences;
+            //string rangeSentences;
+
+            //cs.cacheFileExists(URL, out cacheExists, out passed);
+            //if(cacheExists && passed)
+            //{
+            //    rangeSentences = cs.getCachedFile(URL); 
+            //}
+            //else
+            //{
+            //    cs.notifyReferation(URL);
+            //    //Реферирование
+            //    if(cacheMSMQ != null)
+            //    {
+            //        cacheMSMQ.Send("XMLTEXT", URL); //Вместо первого аргумента сериализованный реферат
+            //    }
+            //}
+
+
 
             try
             {

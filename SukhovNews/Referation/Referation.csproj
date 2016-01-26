@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4B893470-6DB8-4B2C-98B2-D85B9D66C117}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{0F8D62F0-FFD7-432C-96DC-A1934A1FDF36}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dispatcher</RootNamespace>
-    <AssemblyName>Dispatcher</AssemblyName>
+    <RootNamespace>Referation</RootNamespace>
+    <AssemblyName>Referation</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -31,12 +29,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>Dispatcher.Program</StartupObject>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -46,21 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dispatcher.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="cSentences.cs" />
+    <Compile Include="cStopWords.cs" />
+    <Compile Include="cWord.cs" />
+    <Compile Include="IDictionaryEnumerator.cs" />
+    <Compile Include="Mystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RefServer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Niyaz\NiyazTestProject\CommunicationTools\CommunicationTools.csproj">
-      <Project>{38eeb1d7-ef98-440e-b782-7df1f12510cb}</Project>
-      <Name>CommunicationTools</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\SukhovNews\App.config">
-      <Link>App.config</Link>
-    </None>
+    <Compile Include="Referator.cs" />
+    <Compile Include="Sentence.cs" />
+    <Compile Include="Word.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
