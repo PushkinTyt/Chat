@@ -35,7 +35,7 @@ namespace ReferatorServer
 
         private void echo(string message)
         {
-            Console.WriteLine("{0} - ", DateTime.Now.ToString("G", CultureInfo.CreateSpecificCulture("ru")));
+            Console.WriteLine("{0} - {1}", DateTime.Now.ToString("G", CultureInfo.CreateSpecificCulture("ru")), message);
         }
 
         private void TcpListener_onMessage(IPEndPoint endpoint, MetaData md, string msg)
@@ -144,11 +144,6 @@ namespace ReferatorServer
         {
             Console.WriteLine("Попытка зарегистрироваться на диспетчере");
             dc.Register();
-        }
-
-        ~RefServer()
-        {
-            tcpListener.Close();
         }
     }
 }

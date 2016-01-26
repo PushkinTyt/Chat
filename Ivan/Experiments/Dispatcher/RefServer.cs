@@ -15,13 +15,20 @@ namespace Dispatcher
     {
         IPEndPoint endPoint;
         TCPClient client;
-
-        public RefServer(IPEndPoint endPoint)
+        Dispatcher parentDispatcher;
+        public RefServer(IPEndPoint endPoint, Dispatcher dispatcher)
         {
             int port = Convert.ToInt32(ConfigurationManager.AppSettings["refServerPort"].ToString());
             this.endPoint = new IPEndPoint(endPoint.Address, port);
-
+            parentDispatcher = dispatcher;
             client = new TCPClient(this.endPoint.Address.ToString(), this.endPoint.Port);
+            client.onDisconnect += Client_onDisconnect;
+        }
+
+        private void Client_onDisconnect()
+        {
+            parentDispatcher.UpdateServerList(this);
+            client.Close();
         }
 
         public IPEndPoint EndPoint
@@ -50,10 +57,10 @@ namespace Dispatcher
             return other.EndPoint.Address.Equals(this.EndPoint.Address);
         }
 
-        ~RefServer()
-        {
-            client.Close();
-            Debug.Print("RefServer closed");
-        }
+        //~RefServer()
+        //{
+        //    client.Close();
+        //    Debug.Print("RefServer closed");
+        //}
     }
 }

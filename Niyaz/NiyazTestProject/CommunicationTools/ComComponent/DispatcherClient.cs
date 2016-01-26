@@ -114,12 +114,12 @@ namespace CommunicationTools.ComComponent
             try
             {
                 tcpClient.Send("", md);
-                Console.WriteLine("Регистрация на сервера пройдена");
+                Console.WriteLine("Регистрация на диспетчере пройдена");
                 connected = true;
             }
-            catch(SocketException ex)
+            catch(Exception ex)
             {
-                Console.WriteLine("Не удалось зарегестрироваться на сервере. " + ex.Message);
+                Console.WriteLine("Не удалось зарегестрироваться на диспетчере. " + ex.Message);
             }
         }
     }
