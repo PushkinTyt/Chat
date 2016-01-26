@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommunicationTools;
 using System.Configuration;
 using System.Net;
+using System.Diagnostics;
 
 namespace Dispatcher
 {
@@ -13,6 +14,7 @@ namespace Dispatcher
     {
         List<RefServer> servers = new List<RefServer>();
         private int nextServIndex;
+        UDPBroadcaster UDPBroadcasterObj;
 
         public int NextServIndex
         {
@@ -65,7 +67,7 @@ namespace Dispatcher
                 tcpListener.StartListen();
                 Console.WriteLine("TCP слушает по адресу " + tcpListener.Adress);
 
-                UDPBroadcaster UDPBroadcasterObj = new UDPBroadcaster(8555, "239.254.255.255");
+                UDPBroadcasterObj = new UDPBroadcaster(8555, "239.254.255.255");
                 UDPBroadcasterObj.Start();
             }
         }
@@ -127,6 +129,21 @@ namespace Dispatcher
             MetaData md = new MetaData(MetaData.Roles.server, MetaData.Actions.none, MetaData.ContentTypes.link, refServIP);
 
             tcpListener.Send(client, refServIP, md);
+        }
+
+        ~Dispatcher()
+        {
+            if(UDPBroadcasterObj != null)
+            {
+                UDPBroadcasterObj.Stop();
+            }
+
+            if (tcpListener != null)
+            {
+                tcpListener.Close();
+            }
+            
+            Debug.Print("Dispatcher closed");
         }
  
     }

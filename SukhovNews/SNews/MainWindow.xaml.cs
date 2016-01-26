@@ -23,6 +23,8 @@ namespace SNews
         private UDPClient broadCast;
         private string ipDispatcher;
         private CB.DailyInfoSoapClient CBServis;
+        TCPClient dispComponent;
+
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
@@ -52,6 +54,8 @@ namespace SNews
             {
                 TextUS.Content = "Не доступно";
                 TextEVR.Content = TextUS.Content;
+
+
             }
 
 
@@ -232,15 +236,29 @@ namespace SNews
                 MessageBox.Show("выберите статью");
                 return;
             }
+
             //string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
-            //ReferateView page = new ReferateView(url);
-            //page.Show();
+            //Thread newWindowThread = new Thread(() => showRefView(url));
+            //newWindowThread.SetApartmentState(ApartmentState.STA);
+            //newWindowThread.IsBackground = true;
+            //newWindowThread.Start();
             tempCode();
-            
         }
 
+        private void showRefView(string url)
+        {
+            int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
+            dispComponent = new TCPClient(ipDispatcher, port);
 
-        TCPClient dispComponent = null;
+            MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
+            dispComponent.Send("", md);
+            string ipRefServer = dispComponent.ReceiveSyncData(0);
+
+            ReferateView winRef = new ReferateView(url, ipRefServer, port);
+            winRef.Show();
+        }
+
+        
         private void tempCode()
         {
             //todo: пока что % сжатия = 50 всегда. переделать в новом окне.
@@ -287,7 +305,6 @@ namespace SNews
                 dispComponent = null;
             }
         }
-
 
 
         // GABARGE:

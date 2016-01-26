@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using CommunicationTools;
 
 namespace SNews
 {
@@ -19,14 +20,14 @@ namespace SNews
     /// </summary>
     public partial class ReferateView : Window
     {
-        private string ipDispatcher;
+        TCPClient client;
+
         private string URL;
-        public ReferateView(string URL)
+        public ReferateView(string URL, string refServIP, int port)
         {
             this.URL = URL;
             InitializeComponent();
+
         }
-
-
     }
 }

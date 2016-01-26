@@ -100,10 +100,9 @@ namespace CommunicationTools
                         threads.Add(clientHandler);
                     }
                 }
-                catch (Exception ex)
+                catch (ThreadAbortException)
                 {
-                    Debug.WriteLine(ex);
-                    break;
+                    return;
                 }
                 Thread.Sleep(300);
             }
@@ -157,6 +156,10 @@ namespace CommunicationTools
                     threads.Remove(Thread.CurrentThread);
                     break;
                 }
+                catch(ThreadAbortException ex)
+                {
+                    return;
+                }
             }
         }
 
@@ -189,21 +192,29 @@ namespace CommunicationTools
         /// </summary>
         public void Close()
         {
-            acceptThread.Abort();
+            if (acceptThread != null)
+            {
+                acceptThread.Abort();
+            }
+            
             clients.ToList().ForEach(x =>
                     {
                         x.Value.Client.Shutdown(SocketShutdown.Both);
                         x.Value.Close();
                     });
 
-            listener.Stop();
-
+            if(listener != null)
+            {
+                listener.Stop();
+            }
+            
             threads.ForEach(x => x.Abort());
         }
 
         ~TCPListener()
         {
             this.Close();
+            Debug.Print("TCPListener closed");
         }
     }
 }
