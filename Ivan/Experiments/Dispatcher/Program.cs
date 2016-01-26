@@ -20,7 +20,10 @@ namespace Dispatcher
         static void Main(string[] args)
         {
             dispatcher = new Dispatcher();
+            Console.ReadKey();
         }
+
+        
     }
     
 

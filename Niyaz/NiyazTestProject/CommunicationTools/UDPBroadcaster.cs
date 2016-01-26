@@ -45,9 +45,10 @@ namespace CommunicationTools
             broadcastThread.Start();
         }
 
-        public void Pause()
+        public void Stop()
         {
-            broadcastThread.Suspend();
+            if (broadcastThread != null)
+                broadcastThread.Abort();
         }
 
 
@@ -67,11 +68,7 @@ namespace CommunicationTools
                     Thread.Sleep(BroadcastInterval);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
+            catch (ThreadAbortException)
             {
                 broadcastSender.Close();
             }

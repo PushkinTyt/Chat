@@ -93,7 +93,6 @@ namespace CommunicationTools
                     Thread.Sleep(300);
                 }
             }
-
             catch (ThreadAbortException)
             {
                 udpReciver.Close();

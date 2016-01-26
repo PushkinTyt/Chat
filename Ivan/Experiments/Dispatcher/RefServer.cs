@@ -7,6 +7,7 @@ using System.Net;
 using CommunicationTools;
 using System.Configuration;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace Dispatcher
 {
@@ -47,6 +48,12 @@ namespace Dispatcher
         bool IEquatable<RefServer>.Equals(RefServer other)
         {
             return other.EndPoint.Address.Equals(this.EndPoint.Address);
+        }
+
+        ~RefServer()
+        {
+            client.Close();
+            Debug.Print("RefServer closed");
         }
     }
 }

@@ -87,7 +87,11 @@ namespace CommunicationTools
                     Thread.Sleep(300);
                 }
             }
-            catch
+            catch(ThreadAbortException)
+            {
+                return;
+            }
+            catch(SocketException)
             {
                 if(onDisconnect != null)
                 {
@@ -191,14 +195,22 @@ namespace CommunicationTools
             {
                 client.Client.Shutdown(SocketShutdown.Both);
                 client.Close();
-                messageHandler.Abort();
-                pingThread.Abort();
+                if(messageHandler != null)
+                {
+                    messageHandler.Abort();
+                }
+                
+                if(pingThread != null)
+                {
+                    pingThread.Abort();
+                }
             }
         }
 
         ~TCPClient()
         {
             this.Close();
+            Debug.Print("TCPClient closed");
         }
     }
 }
