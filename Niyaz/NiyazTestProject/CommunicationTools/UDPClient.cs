@@ -58,17 +58,27 @@ namespace CommunicationTools
                 udpReciver.ExclusiveAddressUse = false;
                 udpReciver.Client.Bind(ip);
 
+                udpReciver.Client.ReceiveTimeout = 5000;
+
                 while (true)
                 {
 
                     //IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);
-                    byte[] data = udpReciver.Receive(ref ip);
-                    string message = Encoding.Unicode.GetString(data);
-                    dispatcherEndPoint = ip;
-                    if (onMessage != null)
+                    byte[] data;
+                    try
                     {
-                        onMessage(dispatcherEndPoint, message);
+                        data = udpReciver.Receive(ref ip);
+
+                        string message = Encoding.Unicode.GetString(data);
+                        dispatcherEndPoint = ip;
+                        if (onMessage != null)
+                        {
+                            onMessage(dispatcherEndPoint, message);
+                        }
                     }
+                    catch(SocketException ex)
+                    { }
+
                     Thread.Sleep(300);
                 }
             }
@@ -77,14 +87,6 @@ namespace CommunicationTools
             {
                 udpReciver.Close();
                 return;
-            }
-            catch (Exception ex)
-            {
-                onError(ex.Message);
-            }
-            finally
-            {
-                udpReciver.Close();
             }
 
         }

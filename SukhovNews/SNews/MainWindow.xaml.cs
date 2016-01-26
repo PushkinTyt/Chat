@@ -24,6 +24,17 @@ namespace SNews
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.icon.Save(memory);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                Icon = bitmapImage;
+            }
             
             string fullPath = AppDomain.CurrentDomain.BaseDirectory;
             InitializeComponent();
@@ -37,8 +48,8 @@ namespace SNews
             }
             catch (Exception )
             {
-                TextUS.Content = "Сервис не доступен";
-                TextEVR.Content = "Сервис не доступен";
+                TextUS.Content = "Не доступно";
+                TextEVR.Content = TextUS.Content;
 
 
             }
@@ -153,7 +164,8 @@ namespace SNews
                 return;
             }
             string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
-            HtmlParser hp = new HtmlParser(url);
+            System.Diagnostics.Process.Start(url);
+            //HtmlParser hp = new HtmlParser(url);
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
@@ -198,12 +210,22 @@ namespace SNews
             }
             catch (Exception)
             {
-                TextUS.Content = "Сервис не доступен";
-                TextEVR.Content = "Сервис не доступен";
+                TextUS.Content = "Не доступно";
+                TextEVR.Content = TextUS.Content;
              
             }
             
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if(broadCast != null)
+            {
+                broadCast.Stop();
+            }
+        }
+
+       
 
 
         // GABARGE:
