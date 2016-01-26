@@ -17,7 +17,7 @@ namespace CommunicationTools
 
         public enum Roles { none, dispatcher, server, cache, client };
         public enum Actions { none, refText, refNews, register, getCacheAdress, ping };
-        public enum ContentTypes { link, plainText, xml, binary, none };
+        public enum ContentTypes { link, plainText, xml, binary, none, error };
 
         int messageSize = 0;
         Roles role;

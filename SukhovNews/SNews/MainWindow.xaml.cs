@@ -244,9 +244,15 @@ namespace SNews
                 int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
                 dispComponent = new TCPClient(ipDispatcher, port);
                 dispComponent.Send("", md);
-                string ipRefServer = dispComponent.ReceiveSyncData(0);
+                string response = dispComponent.ReceiveSyncData(0);
 
-                ReferateView winRef = new ReferateView(url, ipRefServer);
+                if (response == "0000")
+                {
+                    MessageBox.Show("в данный момент эта опция не доступна. Пожалуйста, обратитесь к администратору");
+                    return;
+                }
+
+                ReferateView winRef = new ReferateView(url, response);
                 winRef.Show();
             }
             catch (Exception)

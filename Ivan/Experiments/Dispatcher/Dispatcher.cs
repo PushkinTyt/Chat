@@ -126,10 +126,13 @@ namespace Dispatcher
 
         void pickServerForClient(IPEndPoint client)
         {
-            if (NextServIndex == -1)
+            if (NextServIndex == -1) // если серверов для реферирования нет
             {
-                // todo: написать как будет себя вести диспетчер, если после запроса клиента на реферирование оказалось, что серверов нет
-                throw new NotImplementedException();
+
+                
+                MetaData metaData = new MetaData(MetaData.Roles.server, MetaData.Actions.none, MetaData.ContentTypes.error, "0000");
+                tcpListener.Send(client, "0000", metaData);
+                return;
             }
             string refServIP = servers[NextServIndex].EndPoint.Address.ToString();
 
