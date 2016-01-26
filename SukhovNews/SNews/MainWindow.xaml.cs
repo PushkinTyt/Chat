@@ -9,7 +9,6 @@ using CommunicationTools;
 using System.Net;
 using System.Windows.Media.Imaging;
 using System.Drawing.Imaging;
-using System.Configuration;
 
 namespace SNews
 {
@@ -22,10 +21,20 @@ namespace SNews
         private UDPClient broadCast;
         private string ipDispatcher;
         private CB.DailyInfoSoapClient CBServis;
-        private TCPClient dispComponent;  
         //private ObservableCollection<RssItem> listViewCollection;
         public MainWindow()
         {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.icon.Save(memory);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                Icon = bitmapImage;
+            }
             
             string fullPath = AppDomain.CurrentDomain.BaseDirectory;
             InitializeComponent();
@@ -39,8 +48,8 @@ namespace SNews
             }
             catch (Exception )
             {
-                TextUS.Content = "Сервис не доступен";
-                TextEVR.Content = "Сервис не доступен";
+                TextUS.Content = "Не доступно";
+                TextEVR.Content = TextUS.Content;
 
 
             }
@@ -86,8 +95,7 @@ namespace SNews
             
             Logger.Write(String.Format("принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
             this.ipDispatcher = endPoint.Address.ToString();
-            
-            broadCast.Stop(); // пауза для udp listener'a
+            broadCast.Stop();
         }
             
         // show rss items in Listview
@@ -156,7 +164,8 @@ namespace SNews
                 return;
             }
             string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
-            HtmlParser hp = new HtmlParser(url);
+            System.Diagnostics.Process.Start(url);
+            //HtmlParser hp = new HtmlParser(url);
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
@@ -201,58 +210,36 @@ namespace SNews
             }
             catch (Exception)
             {
-                TextUS.Content = "Сервис не доступен";
-                TextEVR.Content = "Сервис не доступен";
+                TextUS.Content = "Не доступно";
+                TextEVR.Content = TextUS.Content;
              
             }
             
         }
 
-        private void btnReferate_Click(object sender, RoutedEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            //todo: пока что % сжатия = 50 всегда. переделать в новом окне.
-            byte compressPercent = 50;
-
-            int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
-            try
+            if(broadCast != null)
             {
-                if (dispComponent == null)
-                {
-                    dispComponent = new TCPClient(ipDispatcher, port);
-
-                    MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
-                    dispComponent.Send("", md);
-                    this.IsEnabled = false;
-                    string ipRefServer = dispComponent.ReceiveSyncData(0);
-                    this.IsEnabled = true;
-                    int portRefServ = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"]);
-                    TCPClient refSever = new TCPClient(ipRefServer, portRefServ);
-                    string url = rssChanels[cmbCategoryList.SelectedIndex]
-                        .Articles[lvArticles.SelectedIndex].link;
-
-                    string message = url + "|" + compressPercent;
-
-                    md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
-                    refSever.Send(message, md);
-                    string response = refSever.ReceiveSyncData(0);
-                    MessageBox.Show(response);
-                }
-                else
-                {
-                    MessageBox.Show("погодите, увы занято!");
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                dispComponent = null;
+                broadCast.Stop();
             }
         }
+
+        private void btnReferate_Click(object sender, RoutedEventArgs e)
+        {
+            if (lvArticles.SelectedIndex < 0)
+            {
+                MessageBox.Show("выберите статью");
+                return;
+            }
+            string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
+            ReferateView page = new ReferateView();
+            page.Show();
+            
+        }
+
+
+
 
         // GABARGE:
         //foreach (RssChannel rssChannel in rssChanels)

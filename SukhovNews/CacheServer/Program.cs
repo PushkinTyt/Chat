@@ -43,8 +43,16 @@ namespace CacheServer
 
             host.AddServiceEndpoint(typeof(ICacheService), binding, string.Empty);
 
-            host.Open();
-            Console.WriteLine("Запущен веб-сервис cache по адресу " + serviceUri.AbsoluteUri);
+            try
+            {
+                host.Open();
+                Console.WriteLine("Запущен веб-сервис cache по адресу " + serviceUri.AbsoluteUri);
+            }
+            catch
+            {
+                Console.WriteLine("Не удалось запустить веб-сервис (вероятно, приложение запущено без администраторских прав). ");
+            }
+            
         }
     }
 }

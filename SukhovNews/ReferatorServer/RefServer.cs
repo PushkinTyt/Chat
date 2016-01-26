@@ -61,7 +61,10 @@ namespace ReferatorServer
                         {
                             //Referator referator = new Referator(cachedXML); //создаем рефератор из кэшированного xml
                             
-                        }
+                default:
+                    Console.WriteLine("Не опознанная команда " + md.Action + " от " + md.Role);
+                    break;
+            }
                         else
                         {
                             try
@@ -72,7 +75,7 @@ namespace ReferatorServer
                                 referator = new Referator(fullArticle, "utf-8");
                                 //string articleXml = referator.getXml();
                                 //todo: отправляем кэш серверу articleXml
-                            }
+        }
                             catch (Exception ex)
                             {
                                 //todo: обработать ошибку если не удалось скачать статью
@@ -137,7 +140,33 @@ namespace ReferatorServer
 
 
 
-            return "hey! You are connected";
+            try
+            {
+                cs.cacheFileExists(URL, out cacheExists, out passed);
+            }
+            catch
+            {
+                cacheExists = false;
+                passed = false;
+            }
+            
+            if(cacheExists && passed)
+            {
+                rangeSentences = cs.getCachedFile(URL); 
+            }
+            else
+            {
+                try
+                {
+                    cs.notifyReferation(URL);
+                }
+                catch { }
+                //Реферирование
+                if(cacheMSMQ != null)
+                {
+                    cacheMSMQ.Send("XMLTEXT", URL); //Вместо первого аргумента сериализованный реферат
+                }
+            }
         }
     }
 }

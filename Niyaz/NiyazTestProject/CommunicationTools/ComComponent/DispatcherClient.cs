@@ -15,14 +15,14 @@ namespace CommunicationTools.ComComponent
     {
         IPEndPoint dispEndPoint = null;
 
-        int priority = 999;
-        int waitCoef = 1000;
+        int priority = 0;
+        int waitCoef = 600;
 
         MetaData.Roles role;
         TCPClient tcpClient;
         UDPClient udpClient = new UDPClient();
 
-        bool connected;
+        bool connected = false;
 
         public DispatcherClient(MetaData.Roles role)
         {
@@ -34,6 +34,11 @@ namespace CommunicationTools.ComComponent
             if(udpClient != null)
                 udpClient.onMessage += receiveBroadcastMessage;
             udpClient.Start();
+            Thread.Sleep(UDPClient.BroadcastInterval + 500); //Слушаем broadcaster'a на 500 миллисекунд больше
+            if(!connected)
+            {
+                startDispatcher();
+            }
         }
 
         void receiveBroadcastMessage(IPEndPoint endPoint, string message)
@@ -75,8 +80,13 @@ namespace CommunicationTools.ComComponent
             connected = false;
 
             Console.WriteLine("Прервано соединение с диспетчером...");
+            startDispatcher();
+        }
+
+        void startDispatcher()
+        {
             udpClient.Start();
-            Thread.Sleep(priority * waitCoef + 6000);
+            Thread.Sleep(priority * waitCoef + UDPClient.BroadcastInterval);
             if (!connected)
             {
                 string dispPath = ConfigurationManager.AppSettings["dispatcherPath"].ToString();

@@ -9,7 +9,10 @@
         Height="530"
         MinHeight="530"
         Width="800"
-        MinWidth="800">
+        MinWidth="800" Closing="Window_Closing"
+        
+        >
+        
     <Window.Resources>
         <ControlTemplate TargetType="Button" x:Key="lfBtn">
             <Border Name="MyName" CornerRadius="5" BorderBrush="Bisque" BorderThickness="1" >
@@ -60,9 +63,20 @@
             <ColumnDefinition Width="210*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" MinWidth="90" HorizontalAlignment="Left"  VerticalAlignment="Top"  Background="#B2FFFFFF">
-            <Button x:Name="btnExpand" Content="Update" Template="{StaticResource btn_article}"  HorizontalAlignment="Stretch" Click="UpdateChannels_Click"/>
-            <Button x:Name="btnReferate" Content="Referate" Template="{StaticResource btn_article}" Click="btnReferate_Click"  />
-            <Button x:Name="btnLoadFullArticle" Content="Посмотреть" Template="{StaticResource btn_article}"  Click="fullTextArticle_Click"/>
+            <Button x:Name="btnExpand"
+                    Content="Update"
+                    Template="{StaticResource btn_article}"
+                    HorizontalAlignment="Stretch" 
+                    Click="UpdateChannels_Click"/>
+            <Button x:Name="btnReferate"
+                    Content="Referate" 
+                    Template="{StaticResource btn_article}"
+                    Click="btnReferate_Click"/>
+            <Button 
+                x:Name="btnLoadFullArticle"
+                Content="Посмотреть"
+                Template="{StaticResource btn_article}"
+                Click="fullTextArticle_Click"/>
         </StackPanel>
 
         <Grid Grid.Column="1"
