@@ -151,7 +151,7 @@ namespace CommunicationTools
                 {
                     Debug.Print(ex.Message);
                     clients.Remove((IPEndPoint)client.Client.RemoteEndPoint);
-                    client.Client.Shutdown(SocketShutdown.Both);
+                    //client.Client.Shutdown(SocketShutdown.Both);
                     client.Close();
                     threads.Remove(Thread.CurrentThread);
                     break;
