@@ -42,6 +42,9 @@ namespace ReferatorServer
                         conToCacheServer(msg);
                     }
                     break;
+                default:
+                    Console.WriteLine("Не опознанная команда " + md.Action + " от " + md.Role);
+                    break;
             }
         }
 
