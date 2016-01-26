@@ -173,11 +173,10 @@ namespace CommunicationTools
             MetaData md = (MetaData)formatter.Deserialize(networkStream);
 
             string msg = "";
-            int bufSize = 512;
-            byte[] msgBytes = new byte[md.MessageSize];
 
             if (md.MessageSize > 0)
             {
+                byte[] msgBytes = new byte[md.MessageSize];
                 networkStream.Read(msgBytes, 0, md.MessageSize);
                 msg += md.Encoding.GetString(msgBytes);
             }
