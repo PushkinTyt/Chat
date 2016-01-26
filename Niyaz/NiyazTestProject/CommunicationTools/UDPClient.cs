@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Configuration;
 
 namespace CommunicationTools
 {
@@ -15,6 +16,15 @@ namespace CommunicationTools
         private static IPAddress remoteAddress;
         private static IPEndPoint dispatcherEndPoint = null;
         Thread broadcastListener;
+        private static int broadcastInterval = int.Parse(ConfigurationManager.AppSettings["broadcastFrequency"].ToString());
+
+        public static int BroadcastInterval
+        {
+            get
+            {
+                return broadcastInterval;
+            }
+        }
 
         public delegate void receiveBroadcastMessage(IPEndPoint endPoint, string message);
         public event receiveBroadcastMessage onMessage;
@@ -48,6 +58,7 @@ namespace CommunicationTools
         private void BroadcastReciveProcess()
         {
             UdpClient udpReciver = new UdpClient();
+
             try
             {
                 udpReciver.ExclusiveAddressUse = false;
@@ -91,9 +102,37 @@ namespace CommunicationTools
 
         }
 
+        public bool IsBroadcasterExists()
+        {
+            UdpClient udpReciver = new UdpClient();
+            udpReciver.Client.ReceiveTimeout = BroadcastInterval + 500;
+
+            udpReciver.ExclusiveAddressUse = false;
+            IPEndPoint ip = new IPEndPoint(IPAddress.Any, remotePort);
+
+            //Волшебные строки для запуска нескольких приложений, использующих один адрес или порт
+            udpReciver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            udpReciver.ExclusiveAddressUse = false;
+            udpReciver.Client.Bind(ip);
+
+            try
+            {
+                udpReciver.Receive(ref ip);
+            }
+            catch
+            {
+                return false; //Истек таймаут - не получили сообщение от броадкастера
+            }
+
+            return true;
+        }
+
         ~UDPClient()
         {
-            broadcastListener.Abort();
+            if(broadcastListener != null)
+            {
+                broadcastListener.Abort();
+            }
         }
     }
 }

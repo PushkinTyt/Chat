@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Configuration;
 
 namespace CommunicationTools
 {
@@ -14,7 +15,7 @@ namespace CommunicationTools
     /// </summary>
     public class UDPBroadcaster
     {
-        private static int broadcastInterval = 5000; // 5сек
+        private static int broadcastInterval = int.Parse(ConfigurationManager.AppSettings["broadcastFrequency"].ToString()); // 2 сек
         private static string remoteIP; // "239.254.255.255";
         private int remotePort; //8555;
         private static IPAddress remoteAddress;
@@ -22,6 +23,14 @@ namespace CommunicationTools
         Thread broadcastThread;
 
         UdpClient broadcastSender;
+
+        public static int BroadcastInterval
+        {
+            get
+            {
+                return broadcastInterval;
+            }
+        }
 
         public UDPBroadcaster(int Port, string remoteIPAdr)
         {
@@ -55,7 +64,7 @@ namespace CommunicationTools
                     string message = "disp";
                     byte[] data = Encoding.Unicode.GetBytes(message);
                     broadcastSender.Send(data, data.Length, endPoint); // отправка
-                    Thread.Sleep(broadcastInterval);
+                    Thread.Sleep(BroadcastInterval);
                 }
             }
             catch (Exception ex)

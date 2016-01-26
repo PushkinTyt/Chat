@@ -72,14 +72,27 @@ namespace ReferatorServer
 
             string rangeSentences;
 
-            cs.cacheFileExists(URL, out cacheExists, out passed);
+            try
+            {
+                cs.cacheFileExists(URL, out cacheExists, out passed);
+            }
+            catch
+            {
+                cacheExists = false;
+                passed = false;
+            }
+            
             if(cacheExists && passed)
             {
                 rangeSentences = cs.getCachedFile(URL); 
             }
             else
             {
-                cs.notifyReferation(URL);
+                try
+                {
+                    cs.notifyReferation(URL);
+                }
+                catch { }
                 //Реферирование
                 if(cacheMSMQ != null)
                 {

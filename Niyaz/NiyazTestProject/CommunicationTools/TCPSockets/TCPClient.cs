@@ -150,8 +150,11 @@ namespace CommunicationTools
                 catch(Exception ex)
                 {
                     Debug.Print(ex.Message);
-                    client.Client.Shutdown(SocketShutdown.Both);
-                    client.Close();
+                    if(client != null)
+                    {
+                        client.Client.Shutdown(SocketShutdown.Both);
+                        client.Close();
+                    }
                     break;
                 }
             }
