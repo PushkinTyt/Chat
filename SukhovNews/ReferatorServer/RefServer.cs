@@ -103,7 +103,7 @@ namespace ReferatorServer
                                 string articleXml = referator.getXml();
                                 //todo: отправляем кэш серверу articleXml
 
-                                //cacheMSMQ.Send(articleXml,url);
+                                cacheMSMQ.Send(articleXml,url);
                             }
                             catch (Exception ex)
                             {
@@ -115,8 +115,8 @@ namespace ReferatorServer
 
                         string compressedArticle = referator.Compress(compressPerc);
 
-                        MetaData articleMD = new MetaData(MetaData.Roles.server, MetaData.Actions.refNews, MetaData.ContentTypes.plainText, fullArticle);
-                        tcpListener.Send(endpoint, fullArticle, articleMD);
+                        MetaData articleMD = new MetaData(MetaData.Roles.server, MetaData.Actions.refNews, MetaData.ContentTypes.plainText, compressedArticle);
+                        tcpListener.Send(endpoint, compressedArticle, articleMD);
                     }
                     break;
 

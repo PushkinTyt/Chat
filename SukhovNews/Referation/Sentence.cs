@@ -41,7 +41,8 @@ namespace Referat
 
         public Sentence(string origText, Referator parent, int index, int m)
         {
-
+            this._index = index;
+            this._originalText = origText;
         }
         // парсинг предложения на слова из простой строки
         private void parse2WordsFromStr(string inpStr)
