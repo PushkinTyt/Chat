@@ -60,6 +60,7 @@ namespace ReferatorServer
                         if (hasCache) // если есть кэш
                         {
                             //Referator referator = new Referator(cachedXML); //создаем рефератор из кэшированного xml
+                            
                         }
                         else
                         {
@@ -69,6 +70,8 @@ namespace ReferatorServer
                                 HtmlParser hp = new HtmlParser(url);
                                 fullArticle = hp.Text;
                                 referator = new Referator(fullArticle, "utf-8");
+                                //string articleXml = referator.getXml();
+                                //todo: отправляем кэш серверу articleXml
                             }
                             catch (Exception ex)
                             {
