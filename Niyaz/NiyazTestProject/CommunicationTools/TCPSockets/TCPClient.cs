@@ -130,7 +130,7 @@ namespace CommunicationTools
                 //{
                     if (onDisconnect != null)
                     {
-                        onDisconnect();
+                        //onDisconnect();
                     }
                 //}
             }
