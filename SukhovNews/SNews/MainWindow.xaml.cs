@@ -227,6 +227,7 @@ namespace SNews
             {
                 broadCast.Stop();
             }
+            System.Environment.Exit(1);
         }
 
         private void btnReferate_Click(object sender, RoutedEventArgs e)
@@ -236,27 +237,29 @@ namespace SNews
                 MessageBox.Show("выберите статью");
                 return;
             }
+            try
+            {
+                string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
+                MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
+                int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
+                dispComponent = new TCPClient(ipDispatcher, port);
+                dispComponent.Send("", md);
+                string ipRefServer = dispComponent.ReceiveSyncData(0);
 
-            string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
-            Thread newWindowThread = new Thread(() => showRefView(url));
-            newWindowThread.SetApartmentState(ApartmentState.STA);
-            newWindowThread.IsBackground = true;
-            newWindowThread.Start();
+                ReferateView winRef = new ReferateView(url, ipRefServer);
+                winRef.Show();
+            }
+            catch (Exception)
+            {
+
+                MessageBox.Show("Нет подключения к диспетчеру");
+            }
+            
+            //ReferateView winRef = new ReferateView();
+            
         }
 
-        private void showRefView(string url)
-        {
-            int port = Int32.Parse(ConfigurationManager.AppSettings["dispatcherTCPport"].ToString());
-            dispComponent = new TCPClient(ipDispatcher, port);
-
-            MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews);
-            dispComponent.Send("", md);
-            string ipRefServer = dispComponent.ReceiveSyncData(0);
-
-            ReferateView winRef = new ReferateView(url, ipRefServer);
-            winRef.Show();
-            System.Windows.Threading.Dispatcher.Run();
-        }
+      
 
 
 

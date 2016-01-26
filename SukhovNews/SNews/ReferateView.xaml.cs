@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using CommunicationTools;
 using System.Configuration;
 using System.IO;
+using System.Threading;
 
 namespace SNews
 {
@@ -22,10 +23,53 @@ namespace SNews
     /// </summary>
     public partial class ReferateView : Window
     {
-        TCPClient client;
-
+        Thread threadForRef=null;
+        bool Debag=false;
         private string URL;
         private string refServIP;
+        public ReferateView()
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                Properties.Resources.icon.Save(memory);
+                memory.Position = 0;
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+                Icon = bitmapImage;
+            }
+            InitializeComponent();
+
+
+            slider.Value = 0;
+
+            textBlock.Text = "Запуск без запроса на реферирования";
+
+            Debag = true;
+            
+
+        }
+        ///запус потока
+        private void threadForRef_start(byte compressPercent)
+        {
+            
+            textBlock.Dispatcher.Invoke(new Action(() => textBlock.Text = "Статья на сжатии..."));
+            button.Dispatcher.Invoke(new Action(() => button.Visibility = System.Windows.Visibility.Hidden));
+            int port = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"].ToString());
+            TCPClient refSever = new TCPClient(refServIP, port);
+            string url = URL;
+
+            string message = url + "|" + compressPercent;
+
+            MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
+            refSever.Send(message, md);
+            string response = refSever.ReceiveSyncData(0);
+            textBlock.Dispatcher.Invoke(new Action (() => textBlock.Text = response));
+            button.Dispatcher.Invoke(new Action(() => button.Visibility = System.Windows.Visibility.Visible));
+        }
+        
         public ReferateView(string URL, string refServIP)
         {
             
@@ -46,9 +90,14 @@ namespace SNews
 
 
             slider.Value = 50;
+            byte compressPercent = (byte)(int)slider.Value;
+            threadForRef = new Thread(() =>
+            {
+                threadForRef_start(compressPercent);
+            });
+            threadForRef.Start();
 
-            
-            
+
         }
 
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -56,26 +105,14 @@ namespace SNews
             label.Content = "Степень сжатия " + (int)slider.Value + "%";
         }
 
-        
-       
-
-        private void Window_ContentRendered(object sender, EventArgs e)
+        private void button_Click(object sender, RoutedEventArgs e)
         {
             byte compressPercent = (byte)(int)slider.Value;
-
-
-            int port = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"].ToString());
-            TCPClient refSever = new TCPClient(refServIP, port);
-            string url = URL;
-
-            string message = url + "|" + compressPercent;
-
-            MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
-            refSever.Send(message, md);
-            string response = refSever.ReceiveSyncData(0);
-            textBlock.Text = response;
+            threadForRef = new Thread(() =>
+            {
+                threadForRef_start(compressPercent);
+            });
+            threadForRef.Start();
         }
-
-        
     }
 }

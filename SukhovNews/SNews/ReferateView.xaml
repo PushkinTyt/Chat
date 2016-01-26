@@ -7,15 +7,14 @@
         mc:Ignorable="d"
         Title="ReferateView"
         Height="499.624" Width="406.015"
-        ContentRendered="Window_ContentRendered"
-         >
+        >
     <Grid>
         <ScrollViewer Margin="10,48,0,0">
             <TextBlock x:Name="textBlock"
                    HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        TextWrapping="Wrap" 
-                       Text="Статья на сжатии..."
+                       Text="Ждем подключение к серверу..."
                        
                         />
         </ScrollViewer>
@@ -23,13 +22,17 @@
                 HorizontalAlignment="Left"
                 Height="25" Margin="10,23,0,0" 
                 VerticalAlignment="Top" 
-                Width="240" 
+                Width="270" 
                 ValueChanged="slider_ValueChanged"
                 Maximum = "100"
                Minimum = "0"
                 />
         <Label x:Name="label"
                Content="Степень сжатия" HorizontalAlignment="Left" Margin="26,0,0,0" VerticalAlignment="Top" Width="173" Height="23"/>
+        <Button x:Name="button"
+                Click="button_Click"
+                Content="Реферировать" HorizontalAlignment="Left" Margin="285,23,0,0" VerticalAlignment="Top" Width="90"/>
+       
 
     </Grid>
 </Window>
