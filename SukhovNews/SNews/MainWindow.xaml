@@ -70,7 +70,8 @@
                     Click="UpdateChannels_Click"/>
             <Button x:Name="btnReferate"
                     Content="Referate" 
-                    Template="{StaticResource btn_article}"  />
+                    Template="{StaticResource btn_article}"
+                    Click="btnReferate_Click"/>
             <Button 
                 x:Name="btnLoadFullArticle"
                 Content="Посмотреть"

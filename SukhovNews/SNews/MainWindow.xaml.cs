@@ -225,7 +225,20 @@ namespace SNews
             }
         }
 
-       
+        private void btnReferate_Click(object sender, RoutedEventArgs e)
+        {
+            if (lvArticles.SelectedIndex < 0)
+            {
+                MessageBox.Show("выберите статью");
+                return;
+            }
+            string url = rssChanels[cmbCategoryList.SelectedIndex].Articles[lvArticles.SelectedIndex].link;
+            ReferateView page = new ReferateView();
+            page.Show();
+            
+        }
+
+
 
 
         // GABARGE:
