@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Configuration;
 using System.Threading;
 using System.Diagnostics;
+using System.IO;
 
 namespace CommunicationTools.ComComponent
 {
@@ -89,9 +90,15 @@ namespace CommunicationTools.ComComponent
             Thread.Sleep(priority * waitCoef + UDPClient.BroadcastInterval);
             if (!connected)
             {
-                string dispPath = ConfigurationManager.AppSettings["dispatcherPath"].ToString();
+                string dispRelPath = ConfigurationManager.AppSettings["dispatcherPath"].ToString();
                 ProcessStartInfo startInfo = new ProcessStartInfo();
+                
+                
+                string curFolder = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+                string dispPath = Path.GetFullPath(Path.Combine(curFolder, @"..\..\..\..\")) + dispRelPath;
+
                 startInfo.FileName = dispPath;
+
                 Process dispProcess = Process.Start(startInfo);
                 Console.WriteLine("Запущен диспетчер на этой машине.");
             }

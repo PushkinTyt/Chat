@@ -32,8 +32,8 @@ namespace Referat
             XmlNodeList xSentences = xDoc.SelectNodes("se");
             foreach (XmlNode se in xSentences)
             {
-                int seIndex = int.Parse(se.Attributes.GetNamedItem("Index"));
-                Sentence sentence = new Sentence()
+                //int seIndex = int.Parse(se.Attributes.GetNamedItem("Index"));
+                //Sentence sentence = new Sentence();
             }                        
         }
 

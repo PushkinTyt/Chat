@@ -57,25 +57,32 @@ namespace ReferatorServer
                         // hack: здесь нужно дописать запрос на кэшированную версию
                         // пока что всегда реферируем без проверки на кэш
                         bool hasCache = false;
-                        if (hasCache) // если есть кэш
+                        bool passed;
+                        cs.cacheFileExists(url, out hasCache, out passed);
+
+                        
+
+                        if (hasCache && passed)
                         {
-                            //Referator referator = new Referator(cachedXML); //создаем рефератор из кэшированного xml
-                            
-                default:
-                    Console.WriteLine("Не опознанная команда " + md.Action + " от " + md.Role);
-                    break;
-            }
+                            string cachedXML;
+                            cachedXML = cs.getCachedFile(url);
+                            referator = new Referator(cachedXML);
+                        }
                         else
                         {
+                            cs.notifyReferation(url);
+
                             try
                             {
                                 // берем статью из интернета
                                 HtmlParser hp = new HtmlParser(url);
                                 fullArticle = hp.Text;
                                 referator = new Referator(fullArticle, "utf-8");
-                                //string articleXml = referator.getXml();
+                                string articleXml = referator.getXml();
                                 //todo: отправляем кэш серверу articleXml
-        }
+
+                                cacheMSMQ.Send(articleXml,url);
+                            }
                             catch (Exception ex)
                             {
                                 //todo: обработать ошибку если не удалось скачать статью
@@ -87,6 +94,10 @@ namespace ReferatorServer
                         MetaData articleMD = new MetaData(MetaData.Roles.server, MetaData.Actions.refNews, MetaData.ContentTypes.plainText, fullArticle);
                         tcpListener.Send(endpoint, fullArticle, articleMD);
                     }
+                    break;
+
+                default:
+                    Console.WriteLine("Не опознанная команда " + md.Action + " от " + md.Role);
                     break;
             }
         }
@@ -109,64 +120,6 @@ namespace ReferatorServer
         {
             Console.WriteLine("Попытка зарегистрироваться на диспетчере");
             dc.Register();
-        }
-
-        /// <summary>
-        /// реферирование статьи по url
-        /// </summary>
-        /// <param name="Text">полный текст статьи</param>
-        /// <returns>строка xml</returns>
-        string refNews(string Text)
-        {
-            //bool cacheExists;
-            //bool passed;
-
-            //string rangeSentences;
-
-            //cs.cacheFileExists(URL, out cacheExists, out passed);
-            //if(cacheExists && passed)
-            //{
-            //    rangeSentences = cs.getCachedFile(URL); 
-            //}
-            //else
-            //{
-            //    cs.notifyReferation(URL);
-            //    //Реферирование
-            //    if(cacheMSMQ != null)
-            //    {
-            //        cacheMSMQ.Send("XMLTEXT", URL); //Вместо первого аргумента сериализованный реферат
-            //    }
-            //}
-
-
-
-            try
-            {
-                cs.cacheFileExists(URL, out cacheExists, out passed);
-            }
-            catch
-            {
-                cacheExists = false;
-                passed = false;
-            }
-            
-            if(cacheExists && passed)
-            {
-                rangeSentences = cs.getCachedFile(URL); 
-            }
-            else
-            {
-                try
-                {
-                    cs.notifyReferation(URL);
-                }
-                catch { }
-                //Реферирование
-                if(cacheMSMQ != null)
-                {
-                    cacheMSMQ.Send("XMLTEXT", URL); //Вместо первого аргумента сериализованный реферат
-                }
-            }
         }
     }
 }
