@@ -10,6 +10,7 @@ using System.Net;
 using System.Windows.Media.Imaging;
 using System.Drawing.Imaging;
 using System.Configuration;
+using System.Threading;
 
 namespace SNews
 {
@@ -258,6 +259,7 @@ namespace SNews
                     string ipRefServer = dispComponent.ReceiveSyncData(0);
                     this.IsEnabled = true;
                     int portRefServ = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"]);
+                    Thread.Sleep(500);
                     TCPClient refSever = new TCPClient(ipRefServer, portRefServ);
                     string url = rssChanels[cmbCategoryList.SelectedIndex]
                         .Articles[lvArticles.SelectedIndex].link;
