@@ -253,8 +253,9 @@ namespace SNews
             dispComponent.Send("", md);
             string ipRefServer = dispComponent.ReceiveSyncData(0);
 
-            ReferateView winRef = new ReferateView(url, ipRefServer, port);
+            ReferateView winRef = new ReferateView(url, ipRefServer);
             winRef.Show();
+            System.Windows.Threading.Dispatcher.Run();
         }
 
 

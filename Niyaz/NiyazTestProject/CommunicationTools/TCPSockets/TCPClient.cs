@@ -174,7 +174,7 @@ namespace CommunicationTools
 
             string msg = "";
             int bufSize = 512;
-            byte[] msgBytes = new byte[bufSize];
+            byte[] msgBytes = new byte[md.MessageSize];
 
             if (md.MessageSize > 0)
             {
