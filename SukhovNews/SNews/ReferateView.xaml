@@ -5,11 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SNews"
         mc:Ignorable="d"
-        Title="ReferateView" Height="300" Width="300">
+        Title="ReferateView"
+        Height="499.624" Width="406.015"
+        ContentRendered="Window_ContentRendered"
+         >
     <Grid>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="206" Margin="10,53,0,0" TextWrapping="Wrap" Text="Выхлоп рефератора" VerticalAlignment="Top" Width="272"/>
-        <Slider x:Name="slider" HorizontalAlignment="Left" Height="25" Margin="10,23,0,0" VerticalAlignment="Top" Width="272"/>
-        <Label x:Name="label" Content="Степень сжатия" HorizontalAlignment="Left" Margin="50,0,0,0" VerticalAlignment="Top" Width="122" Height="23"/>
+        <ScrollViewer Margin="10,48,0,0">
+            <TextBlock x:Name="textBlock"
+                   HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       TextWrapping="Wrap" 
+                       Text="Статья на сжатии..."
+                       
+                        />
+        </ScrollViewer>
+        <Slider x:Name="slider"
+                HorizontalAlignment="Left"
+                Height="25" Margin="10,23,0,0" 
+                VerticalAlignment="Top" 
+                Width="240" 
+                ValueChanged="slider_ValueChanged"
+                Maximum = "100"
+               Minimum = "0"
+                />
+        <Label x:Name="label"
+               Content="Степень сжатия" HorizontalAlignment="Left" Margin="26,0,0,0" VerticalAlignment="Top" Width="173" Height="23"/>
 
     </Grid>
 </Window>

@@ -9,7 +9,7 @@ using System.Configuration;
 using System.Net;
 using Rss;
 using Referat;
-
+using System.Globalization;
 
 namespace ReferatorServer
 {
@@ -33,6 +33,11 @@ namespace ReferatorServer
             dc.StartListen();
         }
 
+        private void echo(string message)
+        {
+            Console.WriteLine("{0} - ", DateTime.Now.ToString("G", CultureInfo.CreateSpecificCulture("ru")), );
+        }
+
         private void TcpListener_onMessage(IPEndPoint endpoint, MetaData md, string msg)
         {
             MetaData.Roles role = md.Role;
@@ -49,6 +54,7 @@ namespace ReferatorServer
                 case MetaData.Roles.client:
                     if(md.Action == MetaData.Actions.refNews)
                     {
+                        echo("получен запрос на реферирование от " + endpoint.ToString());
                         Referator referator = null;
                         string fullArticle = "";
                         string[] refParameters = msg.Split('|');
@@ -61,6 +67,7 @@ namespace ReferatorServer
                         try
                         {
                             cs.cacheFileExists(url, out hasCache, out passed);
+                            
                         }
                         catch
                         {
@@ -71,22 +78,27 @@ namespace ReferatorServer
 
                         if (hasCache && passed)
                         {
+                            echo("берем кэш версию");
                             string cachedXML;
                             cachedXML = cs.getCachedFile(url);
                             referator = new Referator(cachedXML);
                         }
                         else
                         {
+                            
                             if (passed)
                             { 
-                            cs.notifyReferation(url);
+                                cs.notifyReferation(url);
+                                echo("сазали кэшу, что будем реферировать");
                             }
-
+                            
                             try
                             {
                                 // берем статью из интернета
+                                Console.WriteLine(" для {0}", endpoint.ToString());
                                 HtmlParser hp = new HtmlParser(url);
                                 fullArticle = hp.Text;
+                                echo("начинаем реферирование");
                                 referator = new Referator(fullArticle, "utf-8");
                                 string articleXml = referator.getXml();
                                 //todo: отправляем кэш серверу articleXml
