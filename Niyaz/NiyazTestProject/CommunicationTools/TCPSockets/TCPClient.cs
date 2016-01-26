@@ -94,7 +94,7 @@ namespace CommunicationTools
                 onDisconnect = null;
                 //return;
             }
-            catch (Exception)
+            catch (SocketException)
             {
                 if(onDisconnect != null)
                 {
@@ -133,6 +133,7 @@ namespace CommunicationTools
                         //onDisconnect();
                     }
                 //}
+                    throw new SocketException();
             }
 
         }
@@ -167,10 +168,6 @@ namespace CommunicationTools
                         msg = msg.TrimEnd('\0');
                         onMessage(md, msg);
                     }
-                    else
-                    {
-                        throw new Exception("ура он отключился нормально!");
-                    }
                     Thread.Sleep(500);
                 }
                 catch(Exception ex)
@@ -178,7 +175,7 @@ namespace CommunicationTools
                     Debug.Print(ex.Message);
                     if(client != null)
                     {
-                        client.Client.Shutdown(SocketShutdown.Both);
+                        //client.Client.Shutdown(SocketShutdown.Both);
                         client.Close();
                     }
                     break;
