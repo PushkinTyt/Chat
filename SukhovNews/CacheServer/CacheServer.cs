@@ -65,6 +65,8 @@ namespace CacheServer
                 file.WriteFile(tag, msg);
                 CacheService.files.Add(tag, file);
             }
+
+            Console.WriteLine("Записан файл " + tag);
         }
 
         //Действия, при нахождении диспетчера

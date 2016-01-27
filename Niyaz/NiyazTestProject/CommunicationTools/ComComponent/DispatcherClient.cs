@@ -17,7 +17,7 @@ namespace CommunicationTools.ComComponent
         IPEndPoint dispEndPoint = null;
 
         int priority = 0;
-        int waitCoef = 600;
+        int waitCoef = 1200;
 
         MetaData.Roles role;
         TCPClient tcpClient;

@@ -80,8 +80,19 @@ namespace ReferatorServer
                         {
                             echo("берем кэш версию");
                             string cachedXML;
-                            cachedXML = cs.getCachedFile(url);
-                            referator = new Referator(cachedXML);
+                            try
+                            {
+                                cachedXML = cs.getCachedFile(url);
+                                referator = new Referator(cachedXML);
+                            }
+                            catch
+                            {
+                                Console.WriteLine(" для {0}", endpoint.ToString());
+                                HtmlParser hp = new HtmlParser(url);
+                                fullArticle = hp.Text;
+                                echo("начинаем реферирование");
+                                referator = new Referator(fullArticle, "utf-8");
+                            }
                         }
                         else
                         {
