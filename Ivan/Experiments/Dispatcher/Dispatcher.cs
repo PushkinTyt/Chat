@@ -126,7 +126,7 @@ namespace Dispatcher
 
         void pickServerForClient(IPEndPoint client)
         {
-            if (NextServIndex == -1) // если серверов для реферирования нет
+            if (servers.Count == 0) // если серверов для реферирования нет
             {
 
                 

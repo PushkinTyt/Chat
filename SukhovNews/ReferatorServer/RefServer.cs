@@ -54,6 +54,7 @@ namespace ReferatorServer
                 case MetaData.Roles.client:
                     if(md.Action == MetaData.Actions.refNews)
                     {
+                        Console.WriteLine();
                         echo("получен запрос на реферирование от " + endpoint.ToString());
                         Referator referator = null;
                         string fullArticle = "";
@@ -82,6 +83,7 @@ namespace ReferatorServer
                             string cachedXML;
                             cachedXML = cs.getCachedFile(url);
                             referator = new Referator(cachedXML);
+                            echo("обработка кэш-версии статьи");
                         }
                         else
                         {
@@ -100,10 +102,13 @@ namespace ReferatorServer
                                 fullArticle = hp.Text;
                                 echo("начинаем реферирование");
                                 referator = new Referator(fullArticle, "utf-8");
+
                                 string articleXml = referator.getXml();
                                 //todo: отправляем кэш серверу articleXml
-
-                                cacheMSMQ.Send(articleXml,url);
+                                if (passed)
+                                {
+                                    cacheMSMQ.Send(articleXml, url);
+                                }
                             }
                             catch (Exception ex)
                             {
