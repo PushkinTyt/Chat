@@ -97,7 +97,7 @@ namespace SNews
         private void UDP_Receive(IPEndPoint endPoint, string message)
         {
             
-            Logger.Write(String.Format("принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
+            Logger.Write(String.Format("Принят пакет от диспетчера с адресом {0} содержимое сообщения: '{1}'",endPoint.Address.ToString(), message) );
             this.ipDispatcher = endPoint.Address.ToString();
             broadCast.Stop();
         }
@@ -248,7 +248,7 @@ namespace SNews
 
                 if (response == "0000")
                 {
-                    MessageBox.Show("в данный момент эта опция не доступна. Пожалуйста, обратитесь к администратору");
+                    MessageBox.Show("В данный момент эта опция не доступна. Пожалуйста, обратитесь к администратору.");
                     return;
                 }
 
@@ -258,7 +258,8 @@ namespace SNews
             catch (Exception)
             {
 
-                MessageBox.Show("Нет подключения к диспетчеру");
+                MessageBox.Show("Нет подключения к диспетчеру. Идет повторный поиск диспетера.");
+                broadCast.Start();
             }
             
             //ReferateView winRef = new ReferateView();
