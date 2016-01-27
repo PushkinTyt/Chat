@@ -58,16 +58,31 @@ namespace SNews
             textBlock.Dispatcher.Invoke(new Action(() => textBlock.Text = "Статья на сжатии..."));
             button.Dispatcher.Invoke(new Action(() => button.Visibility = System.Windows.Visibility.Hidden));
             int port = Int32.Parse(ConfigurationManager.AppSettings["refServerPort"].ToString());
-            TCPClient refSever = new TCPClient(refServIP, port);
-            string url = URL;
 
-            string message = url + "|" + compressPercent;
+            TCPClient refSever = null;
+            try
+            {
+                refSever = new TCPClient(refServIP, port);
+            }
+            catch { }
+            
+            if(refSever != null)
+            {
+                string url = URL;
 
-            MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
-            refSever.Send(message, md);
-            string response = refSever.ReceiveSyncData(0);
-            textBlock.Dispatcher.Invoke(new Action (() => textBlock.Text = response));
-            button.Dispatcher.Invoke(new Action(() => button.Visibility = System.Windows.Visibility.Visible));
+                string message = url + "|" + compressPercent;
+
+                MetaData md = new MetaData(MetaData.Roles.client, MetaData.Actions.refNews, MetaData.ContentTypes.link, message);
+                refSever.Send(message, md);
+                string response = refSever.ReceiveSyncData(0);
+                textBlock.Dispatcher.Invoke(new Action(() => textBlock.Text = response));
+                button.Dispatcher.Invoke(new Action(() => button.Visibility = System.Windows.Visibility.Visible));
+            }
+            else
+            {
+                textBlock.Dispatcher.Invoke(new Action(() => textBlock.Text = "Прервано соединение с сервером реферирования. Закройте то окно."));
+            }
+
         }
         
         public ReferateView(string URL, string refServIP)
